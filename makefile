@@ -2,7 +2,7 @@
 CC=gcc -o
 
 # compiler flags
-CFLAGS=-g -O0 -std=c11 -Wall -Wunused -Werror
+CFLAGS=-g -O0 -std=c17 -Wall -Wunused -Werror
 
 # linker flags
 LFLAGS=-lm -lSDL2 
