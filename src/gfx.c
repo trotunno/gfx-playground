@@ -5,10 +5,9 @@
  *      Author: Dylan
  */
 
-#include <SDL2/SDL.h>
 #include <string.h>
-#include "common.h"
-#include "gfx.h"
+#include "../inc/gfx.h"
+#include "../inc/SDL2/SDL.h"
 
 static void sdl_ReportErrorAndExit(char *errmsg, uint16_t size);
 

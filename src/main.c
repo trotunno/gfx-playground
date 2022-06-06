@@ -5,8 +5,8 @@
  *      Author: Dylan
  */
 
-#include "common.h"
-#include "gfx.h"
+#include "../inc/main.h"
+#include "../inc/gfx.h"
 
 int main()
 {

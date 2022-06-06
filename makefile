@@ -1,13 +1,14 @@
-#!/bin/bash
-
 # compile with gcc, write build output to file
 CC=gcc -o
 
-# compile flags
-CFLAGS=-g -O0 -std=c17 -lm `sdl2-config --cflags --libs` -Werror
+# compiler flags
+CFLAGS=-g -O0 -std=c11 -Wall -Wunused -Werror
 
-# include directory
-INCLUDE=-I/mnt/c/users/green/documents/cprojects/gfx-playground/inc
+# linker flags
+LFLAGS=-lm -lSDL2 
+
+# include paths
+INCLUDE=-I/inc -I/inc/SDL2
 
 # source / header file locations
 CFILES=src/main.c src/gfx.c inc/common.h inc/main.h inc/gfx.h
@@ -16,38 +17,49 @@ CFILES=src/main.c src/gfx.c inc/common.h inc/main.h inc/gfx.h
 BUILD=builds/
 
 # exe location
-BINARY=$(BUILD)/gfx-playground
-
-# stderr log location
-STDERR=$(BUILD)/stderr
+BINARY=$(BUILD)/gfx-playground.exe
 
 # file descriptor that allows for output to be piped into oblivion, never to be seen again
 FD=</dev/null >/dev/null 2>&1 &
 
+# flag that gets set to 1 because idk how to write bash scripts properly
+FLAG=0
+
 # default build target
-all: gfx-playground
+all: clrscrn gfx-playground
 
 # builds the exe, stderr goes to terminal and log file called "stderr" in the build directory
 gfx-playground: $(CFILES)
 	@echo "Building..."
-	@$(CC) $(BINARY) $(CFILES) $(CFLAGS) $(INCLUDE) 2>&1 1>/dev/null | tee $(STDERR)
-	@if [ -s $(BUILD)\stderr ]; then echo "Build Failed!"; else echo "Build Successful!"; fi
+	@$(CC) $(BINARY) $(CFILES) $(CFLAGS) $(LFLAGS) $(INCLUDE)
+	@if [ !? == 0 ]; then echo -n "Build Failed!"; else echo -n "Build Successful!"; fi
+	@FLAG=1
 
 # cleans and builds the exe
 fresh: clean gfx-playground run
+
+# clears the terminal screen
+clrscrn:
+	@clear
+
+# prints a newline
+newline:
+	@echo ""
 
 # deletes the target exe + stderr log file
 clean:
 	@clear
 	@echo "Cleaning..."
-	@rm $(BINARY) $(STDERR)
-	@echo "Done!"
+	@rm $(BINARY)
+	@echo -n "Done!"
 
 # runs the target exe
-run: gfx-playground
+run: clrscrn gfx-playground newline
 	@echo "Running..."
 	@echo "-------------------------"
 	@./$(BINARY)
+	@echo "-------------------------"
+	@echo -n "Done!"
 
 # targets that have names conflicting with a file
-.PHONY: gfx-playground
+.PHONY: clrscrn gfx-playground
