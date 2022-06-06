@@ -1,13 +1,17 @@
-#include "../inc/common.h"
-#include "gfx/gfx.h"
+/*
+ * main.c
+ *
+ *  Created on: Jun 4, 2022
+ *      Author: Dylan
+ */
+
+#include "common.h"
+#include "gfx.h"
 
 int main()
 {
 
-    SDL_Set
-
     printf("Hello World!\n");
 
     return 0;
-
 }
