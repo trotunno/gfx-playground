@@ -8,14 +8,16 @@
 #include "../inc/main.h"
 #include "../inc/gfx.h"
 
+/* ---------------------------------------------------------------------------------------- */
+
 int main()
 {
 
-    SDL_Create();
+    sdl_init();
 
-    printf("Hello World!\n");
+    sdl_start();
 
-    SDL_Destroy();
+    sdl_kill();
 
     return 0;
 }
