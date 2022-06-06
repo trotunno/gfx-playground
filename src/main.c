@@ -11,7 +11,11 @@
 int main()
 {
 
+    SDL_Create();
+
     printf("Hello World!\n");
+
+    SDL_Destroy();
 
     return 0;
 }
