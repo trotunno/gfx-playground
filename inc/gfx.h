@@ -5,8 +5,8 @@
  *      Author: Dylan
  */
 
-#ifndef _SRC_GFX_GFX_H
-#define _SRC_GFX_GFX_H
+#ifndef _INC_GFX_H
+#define _INC_GFX_H
 
 /* ---------------------------------------------------------------------------------------- */
 

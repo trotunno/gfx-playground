@@ -5,13 +5,15 @@
  *      Author: Dylan
  */
 
-#ifndef _COMMON_H
-#define _COMMON_H
+#ifndef _INC_COMMON_H
+#define _INC_COMMON_H
 
-// general libraries
+// ANSI C Standard Libraries
 #include <stdint.h>
 #include <stdbool.h>
 #include <float.h>
 #include <stdio.h>
+
+// Project Headers
 
 #endif

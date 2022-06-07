@@ -1,5 +1,5 @@
-#ifndef _SRC_MAIN_H
-#define _SRC_MAIN_H
+#ifndef _INC_MAIN_H
+#define _INC_MAIN_H
 
 /* ---------------------------------------------------------------------------------------- */
 
