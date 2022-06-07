@@ -1,1 +1,3 @@
 .vscode/
+.builds/
+.gfx-playground.code-workspace

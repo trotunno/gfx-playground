@@ -5,9 +5,10 @@
  *      Author: Dylan
  */
 
+#include <SDL2/SDL.h>
 #include <string.h>
 #include "../inc/gfx.h"
-#include "../inc/SDL2/SDL.h"
+#include "../inc/eventhandler.h"
 
 /* ---------------------------------------------------------------------------------------- */
 
@@ -30,8 +31,42 @@ SDL_Renderer *renderer;
 
 /* ---------------------------------------------------------------------------------------- */
 
-void sdl_init()
+simobject_t *createObject(simobject_t obj)
 {
+
+    SDL_Rect rect = { WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_WIDTH/2, WINDOW_HEIGHT/2 };
+
+    obj.rectangle = rect;
+
+    return malloc(sizeof(obj));
+}
+
+void destroyObject(simobject_t *obj)
+{
+    free(obj);
+}
+
+void simulation_init(simulation_t *sim)
+{
+
+    sim->running = true;
+    sim->createObject = createObject;
+    sim->destroyObject = destroyObject;
+
+    sim->userinteractions.can_jump = false;
+    sim->userinteractions.jump_pressed = false;
+    sim->userinteractions.uparrow_pressed = false;
+    sim->userinteractions.downarrow_pressed = false;
+    sim->userinteractions.leftarrow_pressed = false;
+    sim->userinteractions.rightarrow_pressed = false;
+
+    simobject_t rectangle;
+    rectangle.x_pos = (WINDOW_WIDTH - SIZE) / 2;
+    rectangle.y_pos = (WINDOW_HEIGHT - SIZE) / 2;
+    rectangle.x_vel = 0;
+    rectangle.y_vel = 0;
+
+    sim->simobjects[0] = sim->createObject(rectangle);
 
     // initialize the library
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
@@ -56,26 +91,15 @@ void sdl_init()
 }
 
 // starts the main while loop
-void sdl_start()
+void simulation_start(simulation_t *sim)
 {
-    
-    bool running = true;
-    bool jump_pressed = false;
-    bool can_jump = true;
-    bool left_pressed = false;
-    bool right_pressed = false;
-    
-    float x_pos = (WINDOW_WIDTH - SIZE) / 2;
-    float y_pos = (WINDOW_HEIGHT - SIZE) / 2;
-    float x_vel = 0;
-    float y_vel = 0;
-    
-    SDL_Rect rectangle = { (int)x_pos, (int)y_pos, SIZE, SIZE };
+
+    SDL_Rect rectangle = sim->simobjects[0]->rectangle;
     
     // ---- Main Loop ---- //
 
     SDL_Event event;
-    while(running)
+    while(sim->running)
     {
         
         // check for events
@@ -85,30 +109,11 @@ void sdl_start()
             {
               
                 case SDL_QUIT:
-                    running = false;
+                    sim->running = false;
                     break;
                 
                 case SDL_KEYDOWN:
-                    switch (event.key.keysym.scancode)
-                    {
-                        case SDL_SCANCODE_UP:
-                        case SDL_SCANCODE_SPACE:
-                            jump_pressed = true;
-                            break;
-
-                        case SDL_SCANCODE_A:
-                        case SDL_SCANCODE_LEFT:
-                            left_pressed = true;
-                            break;
-
-                        case SDL_SCANCODE_D:
-                        case SDL_SCANCODE_RIGHT:
-                            right_pressed = true;
-                            break;
-
-                        default:
-                            break;
-                    }
+                    evt_sdl_keydown_handler(&event, sim);
                     break;
 
                 case SDL_KEYUP:
@@ -116,17 +121,17 @@ void sdl_start()
                     {
                         case SDL_SCANCODE_UP:
                         case SDL_SCANCODE_SPACE:
-                            jump_pressed = false;
+                            sim->userinteractions.jump_pressed = false;
                             break;
 
                         case SDL_SCANCODE_A:
                         case SDL_SCANCODE_LEFT:
-                            left_pressed = false;
+                            sim->userinteractions.leftarrow_pressed = false;
                             break;
                         
                         case SDL_SCANCODE_D:
                         case SDL_SCANCODE_RIGHT:
-                            right_pressed = false;
+                            sim->userinteractions.rightarrow_pressed = false;
                             break;
 
                         default:
@@ -144,39 +149,39 @@ void sdl_start()
         SDL_RenderClear(renderer);
 
         // update the rectangle's properties
-        x_vel = (right_pressed - left_pressed)*SPEED;
-        y_vel += GRAVITY;
+        sim->simobjects[0]->x_vel = (sim->userinteractions.rightarrow_pressed - sim->userinteractions.leftarrow_pressed)*SPEED;
+        sim->simobjects[0]->y_vel += GRAVITY;
 
-        if (jump_pressed && can_jump)
+        if (sim->userinteractions.jump_pressed && sim->userinteractions.can_jump)
         {
-            can_jump = false;
-            y_vel = JUMP;
+            sim->userinteractions.can_jump = false;
+            sim->simobjects[0]->y_vel = JUMP;
         }
 
-        x_pos += x_vel / 60;
-        y_pos += y_vel / 60;
+        sim->simobjects[0]->x_pos += (sim->simobjects[0]->x_vel / 60);
+        sim->simobjects[0]->y_pos += (sim->simobjects[0]->y_vel / 60);
     
-        if (x_pos <= 0)
-            x_pos = 0;
+        if (sim->simobjects[0]->x_pos <= 0)
+            sim->simobjects[0]->x_pos = 0;
 
-        if (x_pos >= WINDOW_WIDTH - rectangle.w)
-            x_pos = WINDOW_WIDTH - rectangle.w;
+        if (sim->simobjects[0]->x_pos >= WINDOW_WIDTH - rectangle.w)
+            sim->simobjects[0]->x_pos = WINDOW_WIDTH - rectangle.w;
 
-        if (y_pos <= 0)
-            y_pos = 0;
+        if (sim->simobjects[0]->y_pos <= 0)
+            sim->simobjects[0]->y_pos = 0;
 
-        if (y_pos >= WINDOW_HEIGHT - rectangle.h)
+        if (sim->simobjects[0]->y_pos >= WINDOW_HEIGHT - rectangle.h)
         {
-            y_vel = 0;
-            y_pos = WINDOW_HEIGHT - rectangle.h;
+            sim->simobjects[0]->y_vel = 0;
+            sim->simobjects[0]->y_pos = WINDOW_HEIGHT - rectangle.h;
 
-            if (!jump_pressed)
-                can_jump = true;
+            if (!sim->userinteractions.jump_pressed)
+                sim->userinteractions.can_jump = true;
         }
 
         // update the rendering object(s)
-        rectangle.x = (int) x_pos;
-        rectangle.y = (int) y_pos;
+        rectangle.x = (int)sim->simobjects[0]->x_pos;
+        rectangle.y = (int)sim->simobjects[0]->y_pos;
 
         // draw the rendering object(s)
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
@@ -189,12 +194,12 @@ void sdl_start()
     }
     
     // kill the SDL process
-    sdl_kill();
+    simulation_kill();
 
 }
 
 // destroys all SDL objects and quits
-void sdl_kill()
+void simulation_kill()
 {
     if (window)   SDL_DestroyWindow(window);
     if (renderer) SDL_DestroyRenderer(renderer);
@@ -204,6 +209,7 @@ void sdl_kill()
 
 /* ---------------------------------------------------------------------------------------- */
 
+// wrapper function for reporting SDL-related errors to the terminal
 static void sdl_reportAndDestroy()
 {
     char errmsg[ERRMSG_SIZE];
@@ -211,5 +217,5 @@ static void sdl_reportAndDestroy()
     SDL_GetErrorMsg(errmsg, ERRMSG_SIZE);
     printf("%s\n", errmsg);
 
-    sdl_kill();
+    simulation_kill();
 }

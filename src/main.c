@@ -5,19 +5,22 @@
  *      Author: Dylan
  */
 
+#define SDL_MAIN_HANDLED
+
+#include <SDL2/SDL.h>
 #include "../inc/main.h"
 #include "../inc/gfx.h"
 
 /* ---------------------------------------------------------------------------------------- */
 
-int main()
+int main(int argc, char **argv)
 {
 
-    sdl_init();
+    simulation_t *simulation = malloc(sizeof(simulation_t));
 
-    sdl_start();
+    simulation_init(simulation);
 
-    sdl_kill();
+    simulation_start(simulation);
 
     return 0;
 }
