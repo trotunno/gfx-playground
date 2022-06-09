@@ -11,7 +11,7 @@ LFLAGS=-lm -lSDL2
 INCLUDE=-I/inc -I/inc/SDL2
 
 # source files
-CFILES= src/simobject.c src/userinteractions.c src/simulation.c src/eventhandler.c src/main.c 
+CFILES= src/simobject.c src/simulation.c src/eventhandler.c src/main.c 
 
 # header files
 HFILES=inc/common.h inc/simobject.h inc/userinteractions.h inc/simulation.h inc/eventhandler.h inc/main.h

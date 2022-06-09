@@ -1,8 +1,11 @@
 /*
- * eventhandler.h
+ *  eventhandler.h
  *
  *  Created on: Jun 6, 2022
  *      Author: Dylan
+ * 
+ *  Handles user inputs (manifested as SDL events) during the simulation.
+ * 
  */
 
 #ifndef _INC_EVENTHANDLER_H
@@ -10,7 +13,7 @@
 
 /* ---------------------------------------------------------------------------------------- */
 
-#include <SDL2/SDL.h>
+#include <SDL2/SDL_events.h>
 #include "common.h"
 #include "simulation.h"
 

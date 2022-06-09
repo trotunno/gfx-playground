@@ -1,5 +1,5 @@
 /*
- * simulation.h
+ *  simulation.h
  *
  *  Created on: Jun 8, 2022
  *      Author: Dylan
@@ -10,20 +10,24 @@
 
 /* ---------------------------------------------------------------------------------------- */
 
-#define WINDOW_WIDTH 640
-#define WINDOW_HEIGHT 480
-#define DIMENSIONS 2
+#define SDL_ERRMSG_SIZE (150)
+
+#define WINDOW_WIDTH 1152
+#define WINDOW_HEIGHT 648
+#define SIMULATION_FPS 60
+
 
 /* ---------------------------------------------------------------------------------------- */
 
-#include <SDL2/SDL.h>
+#include <SDL2/SDL_render.h>
+#include <SDL2/SDL_video.h>
 #include "simobject.h"
 #include "userinteractions.h"
 #include "common.h"
 
 /* ---------------------------------------------------------------------------------------- */
 
-#define SDL_ERRMSG_SIZE (150)
+
 
 /* ---------------------------------------------------------------------------------------- */
 
@@ -31,18 +35,17 @@
 typedef struct simulation_t
 {
     
-    bool                running;                              // main loop on/off
+    bool                running;                              // simulation on/off
+    uint8_t             FPS;                                  // how many times the simulation is updated per second
     
+    void                (*destroyObject)(simobject_t *);      // function for removing simulation objects
+    simobject_t*        (*createObject)(simobject_t);         // function for adding simulation objects
+
     SDL_Renderer        *renderer;                            // SDL renderer the simulation is using
     SDL_Window          *window;                              // SDL window the simulation is using
 
-    uint8_t             FPS;                                  // how many times the simulation is updated per second
-
-    simobject_t         simobjects[1];                       // array of objects in the simulation
+    simobject_t         *simobjects;                          // array of objects in the simulation
     userinteractions_t  userinteractions;                     // structure of possible user interactions
-
-    void                (*destroyObject)(simobject_t *);      // function for removing simulation objects
-    simobject_t*        (*createObject)(simobject_t);         // function for adding simulation objects
 
 } simulation_t;
 

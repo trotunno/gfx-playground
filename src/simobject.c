@@ -1,12 +1,13 @@
 /*
- * simobject.c
+ *  simobject.c
  *
  *  Created on: Jun 8, 2022
  *      Author: Dylan
  */
 
-#include <SDL2/SDL.h>
-#include "../inc/simulation.h"
+/* ---------------------------------------------------------------------------------------- */
+
+#include "../inc/common.h"
 #include "../inc/simobject.h"
 
 /* ---------------------------------------------------------------------------------------- */

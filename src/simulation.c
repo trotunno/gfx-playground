@@ -8,6 +8,7 @@
 /* ---------------------------------------------------------------------------------------- */
 
 #include <SDL2/SDL.h>
+#include "../inc/common.h"
 #include "../inc/eventhandler.h"
 #include "../inc/simobject.h"
 #include "../inc/simulation.h"
@@ -20,13 +21,6 @@ static void sdl_reportError(void);
 
 void simulation_init(simulation_t *sim)
 {
-
-    sim->running = true;
-    sim->createObject = &createObject;
-    sim->destroyObject = &destroyObject;
-
-    sim->userinteractions.space_pressed = false;
-    sim->userinteractions.escape_pressed = false;
 
     // initialize the library
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
@@ -48,9 +42,22 @@ void simulation_init(simulation_t *sim)
         sdl_reportError();
     }
 
+    sim->FPS = SIMULATION_FPS;
+
+    
+    // assign function pointers
+    sim->createObject = &createObject;
+    sim->destroyObject = &destroyObject;
+
+    // set user interactions to initial state
+    sim->userinteractions.space_pressed = false;
+    sim->userinteractions.escape_pressed = false;
+
+    sim->running = true;
+
 }
 
-// starts the main while loop
+// starts and maintains the simulation (window, renderer, objects)
 void simulation_start(simulation_t *sim)
 {
 
@@ -85,7 +92,7 @@ void simulation_start(simulation_t *sim)
         SDL_SetRenderDrawColor(sim->renderer, 0, 0, 0, 255);
         SDL_RenderClear(sim->renderer);
 
-        // calculate + update the position of each object in the simulation
+        // get updated state of each object in the simulation
 
 
         // update the texture via blitting
@@ -101,20 +108,18 @@ void simulation_start(simulation_t *sim)
 
 }
 
-// destroys all SDL objects and quits
+// destroys all SDL objects, frees all dynamically allocated memory and then quits
 void simulation_kill(simulation_t *sim)
 {
+
     if (sim->window)   SDL_DestroyWindow(sim->window);
     if (sim->renderer) SDL_DestroyRenderer(sim->renderer);
 
-    size_t size = sizeof(sim->simobjects) / sizeof(simobject_t);
-    for (int i = 0; i < size; i++)
-    {
-        sim->destroyObject(&sim->simobjects[i]);
-    }
-    free(sim);
+    free(sim->simobjects);
 
+    free(sim);
     SDL_Quit();
+
 }
 
 /* ---------------------------------------------------------------------------------------- */

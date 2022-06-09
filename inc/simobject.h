@@ -1,5 +1,5 @@
 /*
- * simobject.h
+ *  simobject.h
  *
  *  Created on: Jun 8, 2022
  *      Author: Dylan
@@ -14,7 +14,6 @@
 
 /* ---------------------------------------------------------------------------------------- */
 
-#include <SDL2/SDL.h>
 #include "common.h"
 
 // manages an object in the simulation
