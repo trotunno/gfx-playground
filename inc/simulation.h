@@ -16,18 +16,12 @@
 #define WINDOW_HEIGHT 648
 #define SIMULATION_FPS 60
 
-
 /* ---------------------------------------------------------------------------------------- */
 
-#include <SDL2/SDL_render.h>
-#include <SDL2/SDL_video.h>
+#include <SDL2/SDL.h>
 #include "simobject.h"
 #include "userinteractions.h"
 #include "common.h"
-
-/* ---------------------------------------------------------------------------------------- */
-
-
 
 /* ---------------------------------------------------------------------------------------- */
 
@@ -35,17 +29,20 @@
 typedef struct simulation_t
 {
     
-    bool                running;                              // simulation on/off
-    uint8_t             FPS;                                  // how many times the simulation is updated per second
-    
-    void                (*destroyObject)(simobject_t *);      // function for removing simulation objects
-    simobject_t*        (*createObject)(simobject_t);         // function for adding simulation objects
+    bool                running;                                // simulation on/off
+    uint8_t             FPS;                                    // how many times the simulation is updated per second
 
-    SDL_Renderer        *renderer;                            // SDL renderer the simulation is using
-    SDL_Window          *window;                              // SDL window the simulation is using
+    SDL_Renderer        *renderer;                              // SDL renderer the simulation is using
+    void                (*sdl_renderer_init)(SDL_Renderer *);
 
-    simobject_t         *simobjects;                          // array of objects in the simulation
-    userinteractions_t  userinteractions;                     // structure of possible user interactions
+    SDL_Window          *window;                                // SDL window the simulation is using
+    void                (*sdl_window_init)(SDL_Window *);
+
+    SDL_Texture         *texture;                               // SDL texture that is updated and displayed each frame
+    void                (*sdl_texture_init)(SDL_Texture *);
+
+    simobject_t         *simobjects;                            // array of objects in the simulation
+    userinteractions_t  userinteractions;                       // structure of possible user interactions
 
 } simulation_t;
 

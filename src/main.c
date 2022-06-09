@@ -1,5 +1,5 @@
 /*
- * main.c
+ *  main.c
  *
  *  Created on: Jun 4, 2022
  *      Author: Dylan
@@ -10,6 +10,7 @@
 #include <SDL2/SDL.h>
 #include "../inc/main.h"
 #include "../inc/simulation.h"
+#include "../inc/simobject.h"
 
 /* ---------------------------------------------------------------------------------------- */
 
