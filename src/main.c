@@ -9,7 +9,7 @@
 
 #include <SDL2/SDL.h>
 #include "../inc/main.h"
-#include "../inc/gfx.h"
+#include "../inc/simulation.h"
 
 /* ---------------------------------------------------------------------------------------- */
 
