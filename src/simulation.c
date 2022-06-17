@@ -11,10 +11,13 @@
 
 /* ---------------------------------------------------------------------------------------- */
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_render.h>
-#include <SDL2/SDL_surface.h>
-#include <SDL2/SDL_video.h>
+#include <float.h>
+
+#include "../inc/SDL2/SDL.h"
+#include "../inc/SDL2/SDL_render.h"
+#include "../inc/SDL2/SDL_surface.h"
+#include "../inc/SDL2/SDL_video.h"
+
 #include "../inc/common.h"
 #include "../inc/eventhandler.h"
 #include "../inc/simobject.h"
@@ -25,8 +28,10 @@
 static void simulation_render_objects(simulation_t *sim);
 static void simulation_update_object_states(simulation_t *sim);
 static void simulation_init_background(simulation_t *sim);
+static void simulation_init_border(simulation_t *sim);
 
 static void sdl_initialize(simulation_t *sim);
+static void sdl_process_events(simulation_t *sim);
 static void sdl_report_error(void);
 
 /* ---------------------------------------------------------------------------------------- */
@@ -34,7 +39,7 @@ static void sdl_report_error(void);
 void simulation_init(simulation_t *sim)
 {
 
-    // allocate memory for all the simulation structures
+    // allocate memory for all simulation structures
     sim->sdl              = malloc(sizeof(sdlstructures_t));
     sim->properties       = malloc(sizeof(simproperties_t));
     sim->userinteractions = malloc(sizeof(simproperties_t));
@@ -44,30 +49,44 @@ void simulation_init(simulation_t *sim)
     // set up SDL2
     sdl_initialize(sim);
 
-    // set window size members
+    // set simulation properties
+    int windowLength, windowHeight;
     SDL_GetWindowSize(sim->sdl->window, &sim->properties->windowLength, &sim->properties->windowHeight);
 
-    // set field properties
-    sim->fieldproperties->timestep = 1.0f;
+    printf("window length: %d\nwindow height: %d\n", sim->properties->windowLength, sim->properties->windowHeight);
 
-    sim->fieldproperties->xvel_constant = 1.0f;
-    sim->fieldproperties->yvel_constant = 0.0f;
-
-    sim->fieldproperties->xacc_constant = 0.0f;
-    sim->fieldproperties->yacc_constant = -9.81f;
-
-    sim->fieldproperties->positive_x_boundary = sim->properties->windowLength /  2.0f;
-    sim->fieldproperties->negative_x_boundary = sim->properties->windowLength / -2.0f;
-    sim->fieldproperties->positive_y_boundary = sim->properties->windowHeight /  2.0f;
-    sim->fieldproperties->negative_x_boundary = sim->properties->windowHeight / -2.0f;
+    sim->properties->fps = SIMULATION_FPS;
+    sim->properties->running = true;
 
     // set user interaction default states
     sim->userinteractions->space_pressed = false;
     sim->userinteractions->escape_pressed = false;
 
-    // set simulation characteristics
-    sim->properties->fps = SIMULATION_FPS;
-    sim->properties->running = true;
+    // set field properties
+    sim->fieldproperties->timestep = 1.0f;
+    
+    sim->fieldproperties->xvel_constant =  1.0f;
+    sim->fieldproperties->yvel_constant =  0.0f;
+    sim->fieldproperties->xacc_constant =  0.0f;
+    sim->fieldproperties->yacc_constant = -9.81f;
+
+    //^ TODO: this doesn't work how it's s'posed to!!
+    sim->fieldproperties->positive_x_boundary = (float)sim->properties->windowLength * 0.2f;
+    sim->fieldproperties->negative_x_boundary = (float)sim->properties->windowHeight * 0.2f;
+    sim->fieldproperties->positive_y_boundary = (float)sim->properties->windowLength * 0.6f;
+    sim->fieldproperties->negative_y_boundary = (float)sim->properties->windowHeight * 0.6f;
+
+    printf("positive x boundary = %f\n", sim->fieldproperties->positive_x_boundary);
+    printf("negative x boundary = %f\n", sim->fieldproperties->negative_x_boundary);
+    printf("positive y boundary = %f\n", sim->fieldproperties->positive_y_boundary);
+    printf("negative y boundary = %f\n", sim->fieldproperties->negative_y_boundary);
+
+    // initialize the background & border for the simulation
+    simulation_init_background(sim);
+    simulation_init_border(sim);
+
+    //! add an object to the simulation
+    createObject(10, 0, 0, 0, 0, 0, 0);
 
 }
 
@@ -75,34 +94,11 @@ void simulation_init(simulation_t *sim)
 void simulation_start(simulation_t *sim)
 {
 
-    //simulation_init_background(sim);
-
-    SDL_Event event;
     while(sim->properties->running)
     {
-        
-        // check for SDL-related events first before updating the simulation's state 
-        while (SDL_PollEvent(&event))
-        {
-            switch(event.type)
-            {
-              
-                case SDL_QUIT:
-                    evt_sdl_quit_handler(&event, sim);
-                    break;
-                
-                case SDL_KEYDOWN:
-                    evt_sdl_keydown_handler(&event, sim);
-                    break;
 
-                case SDL_KEYUP:
-                    evt_sdl_keyup_handler(&event, sim);
-                    break;
-                
-                default:
-                    break;
-            }
-        }
+        // process SDL2-related events
+        sdl_process_events(sim);
 
         // update state of each object in the simulation
         simulation_update_object_states(sim);
@@ -114,9 +110,6 @@ void simulation_start(simulation_t *sim)
         SDL_Delay(1000/sim->properties->fps);
 
     }
-    
-    // kill the SDL process
-    simulation_kill(sim);
 
 }
 
@@ -142,48 +135,106 @@ void simulation_kill(simulation_t *sim)
 
 /* ---------------------------------------------------------------------------------------- */
 
+// initializes the background for the simulation
 static void simulation_init_background(simulation_t *sim)
 {
     
-    const SDL_Rect background = { 0, 0, sim->properties->windowLength, sim->properties->windowHeight };
+    const SDL_FRect background = { 0, 0, sim->properties->windowLength, sim->properties->windowHeight };
 
-    SDL_SetRenderDrawColor(sim->sdl->renderer, 0xFF, 0xAA, 0xCC, 0xA0);                  // set the color
-    SDL_RenderFillRect(sim->sdl->renderer, &background);                                 // fill
+    SDL_SetRenderDrawColor(sim->sdl->renderer, 0x00, 0x00, 0x00, 0x00);
+    SDL_RenderDrawRectF(sim->sdl->renderer, &background);
+    SDL_RenderFillRectF(sim->sdl->renderer, &background);
+    SDL_RenderClear(sim->sdl->renderer);
+    SDL_RenderPresent(sim->sdl->renderer);
 
-    SDL_RenderPresent(sim->sdl->renderer);                                               // update screen
+    sim->properties->background = background;
 
 }
 
+// initializes the simulation's borders within the window
+static void simulation_init_border(simulation_t *sim)
+{
+
+    int border_anchor_x = sim->fieldproperties->negative_x_boundary;
+    int border_anchor_y = sim->fieldproperties->positive_y_boundary;
+    int border_width    = sim->fieldproperties->positive_x_boundary - sim->fieldproperties->negative_x_boundary;
+    int border_height   = sim->fieldproperties->positive_y_boundary - sim->fieldproperties->negative_y_boundary;
+
+    const SDL_FRect border = { border_anchor_x, border_anchor_y, border_width, border_height };
+
+    SDL_SetRenderDrawColor(sim->sdl->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+    SDL_RenderDrawRectF(sim->sdl->renderer, &border);
+    SDL_RenderClear(sim->sdl->renderer);
+    SDL_RenderPresent(sim->sdl->renderer);
+
+    sim->properties->border = border;
+
+}
+
+// applies field properties to the objects in the simulation
 static void simulation_update_object_states(simulation_t *sim)
 {
 
     for(uint32_t i = 0; i < SIMULATION_NUM_OBJECTS; i++)
     {
-        simobject_update_state(&sim->objects[i], *sim->fieldproperties);
+        simobject_update_state(sim->objects[i], *sim->fieldproperties);
     }
 
 }
 
+// renders each object as a rectangle and draws them to the screen
 static void simulation_render_objects(simulation_t *sim)
 {
 
     simobject_t obj;
 
-    SDL_SetRenderDrawColor(sim->sdl->renderer, 0x00, 0x00, 0x00, 0xFF);
-    SDL_RenderClear(sim->sdl->renderer);
+    float window_x_origin = (float)sim->properties->border.w / 2.0f;
+    float window_y_origin = (float)sim->properties->border.h / 2.0f;
+
+    printf("border.w = %f\n", sim->properties->border.w);
+    printf("border.h = %f\n", sim->properties->border.h);
 
     for (uint32_t i = 0; i < SIMULATION_NUM_OBJECTS; i++)
     {
-        obj = sim->objects[i];                                                  
 
-        float window_x_pos = sim->properties->windowHeight - obj.x_pos;                  // convert object's x-y coordinates to window coordinates
-        float window_y_pos = sim->properties->windowLength - obj.y_pos;
+        obj = *sim->objects[i];                                                  
 
-        SDL_FRect rect = { window_x_pos, window_y_pos, obj.height, obj.width };          // create rectangle from the object's state
+        // convert object's x-y coordinates to window coordinates
+        float window_x_pos = window_x_origin + obj.x_pos;
+        float window_y_pos = window_y_origin - obj.y_pos;
 
-        SDL_SetRenderDrawColor(sim->sdl->renderer, 0xFF, 0x00, 0x00, 0xFF);              // set object color
-        SDL_RenderDrawRectF(sim->sdl->renderer, &rect);                                  // draw object
-        SDL_RenderFillRectF(sim->sdl->renderer, &rect);                                  // color fill)
+        printf("obj.x_pos = %f\n", obj.x_pos);
+        printf("obj.y_pos = %f\n", obj.y_pos);
+        printf("window_x_pos = %f\n", window_x_pos);
+        printf("window_y_pos = %f\n", window_y_pos);
+
+        // create rectangle from the object's current state
+        SDL_FRect rect = { window_x_pos, window_y_pos, obj.height, obj.width };
+
+        // set object color
+        if (SDL_SetRenderDrawColor(sim->sdl->renderer, 0xFF, 0xAA, 0x43, 0xFF))         
+        {
+            sdl_report_error();
+        }             
+        
+        // draw object
+        if (SDL_RenderDrawRectF(sim->sdl->renderer, &rect))
+        {
+            sdl_report_error();
+        }
+        
+        // color fill
+        if (SDL_RenderFillRectF(sim->sdl->renderer, &rect))
+        {
+            sdl_report_error();
+        }
+        
+        // clear rendering target properties
+        if (SDL_RenderClear(sim->sdl->renderer))
+        {
+            sdl_report_error();
+        }
+
     }
 
     SDL_RenderPresent(sim->sdl->renderer);
@@ -192,10 +243,11 @@ static void simulation_render_objects(simulation_t *sim)
 
 /* ---------------------------------------------------------------------------------------- */
 
+// initializes all SDL2-related components of the simulation
 static void sdl_initialize(simulation_t *sim)
 {
 
-    if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
+    if (SDL_Init(SDL_INIT_TIMER|SDL_INIT_EVENTS|SDL_INIT_VIDEO) != 0)
     {
         sdl_report_error();
     }
@@ -216,6 +268,36 @@ static void sdl_initialize(simulation_t *sim)
     if (!sim->sdl->texture)
     {
         sdl_report_error();
+    }
+
+}
+
+// loops until there are no events left to handle
+static void sdl_process_events(simulation_t *sim)
+{
+    
+    SDL_Event event;
+
+    while (SDL_PollEvent(&event))
+    {
+        switch(event.type)
+        {
+              
+            case SDL_QUIT:
+                evt_sdl_quit_handler(&event, sim);
+                break;
+                
+            case SDL_KEYDOWN:
+                evt_sdl_keydown_handler(&event, sim);
+                break;
+
+            case SDL_KEYUP:
+                evt_sdl_keyup_handler(&event, sim);
+                break;
+                
+            default:
+                break;
+        }
     }
 
 }

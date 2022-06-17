@@ -10,7 +10,7 @@
 
 /* ---------------------------------------------------------------------------------------- */
 
-#include <SDL2/SDL.h>
+#include "SDL2/SDL.h"
 #include "common.h"
 
 // contains properties of the field the object's physics must adhere to
@@ -50,7 +50,7 @@ typedef struct simobject_t
 /* ---------------------------------------------------------------------------------------- */
 
 void destroyObject(simobject_t *obj);
-simobject_t* createObject(SDL_FRect rect, float mass, float x_vel, float y_vel, float x_acc, float y_acc);
+void createObject(float mass, float x_pos, float y_pos, float x_vel, float y_vel, float x_acc, float y_acc);
 
 void simobject_update_state(simobject_t *obj, fieldproperties_t props);
 

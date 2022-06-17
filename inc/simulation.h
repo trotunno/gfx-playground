@@ -21,7 +21,7 @@
 
 /* ---------------------------------------------------------------------------------------- */
 
-#include <SDL2/SDL.h>
+#include "SDL2/SDL.h"
 #include "simobject.h"
 #include "userinteractions.h"
 #include "common.h"
@@ -33,8 +33,11 @@ typedef struct simproperties_t
     bool                running;                                // simulation on/off
     uint8_t             fps;                                    // how many times the simulation is updated per second
 
-    int32_t             windowHeight;
-    int32_t             windowLength;
+    int32_t             windowHeight;                           // the window's height in screen coordinates
+    int32_t             windowLength;                           // the window's length in screen coordinates
+
+    SDL_FRect           background;                             // rectangle containing the background's information
+    SDL_FRect           border;                                 // rectangle containing the border's information
 
 } simproperties_t;
 
@@ -50,13 +53,11 @@ typedef struct sdlstructures_t
 typedef struct simulation_t
 {
     
-    sdlstructures_t     *sdl;                                    // SDL objects used by the simluation
-    simproperties_t     *properties;                             // simulation properties
-    userinteractions_t  *userinteractions;                       // structure of possible user interactions
-    fieldproperties_t   *fieldproperties;                        // physics field properties
-
-    simobject_t         *objects;                               // array of (pointers to) objects in the simulation
-    simobject_t         simborder;                              // simulation border object for object collisions
+    sdlstructures_t     *sdl;                                   // SDL objects used by the simluation
+    simproperties_t     *properties;                            // simulation properties
+    userinteractions_t  *userinteractions;                      // structure of possible user interactions
+    fieldproperties_t   *fieldproperties;                       // physics field properties
+    simobject_t         **objects;                              // array of (pointers to) objects in the simulation
 
 } simulation_t;
 
