@@ -1,3 +1,4 @@
 .vscode/
 .builds/
 .gfx-playground.code-workspace
+*.gch

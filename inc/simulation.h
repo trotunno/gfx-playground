@@ -14,7 +14,10 @@
 
 #define WINDOW_WIDTH 1152
 #define WINDOW_HEIGHT 648
+
 #define SIMULATION_FPS 60
+#define SIMULATION_NUM_OBJECTS 1
+#define SIMULATION_CONSTANT_ACCELRATION 1
 
 /* ---------------------------------------------------------------------------------------- */
 
@@ -25,24 +28,35 @@
 
 /* ---------------------------------------------------------------------------------------- */
 
-// manages the simulation as a whole
+typedef struct simproperties_t
+{
+    bool                running;                                // simulation on/off
+    uint8_t             fps;                                    // how many times the simulation is updated per second
+
+    int32_t             windowHeight;
+    int32_t             windowLength;
+
+} simproperties_t;
+
+typedef struct sdlstructures_t
+{
+
+    SDL_Renderer        *renderer;                              // SDL renderer the simulation is using
+    SDL_Window          *window;                                // SDL window the simulation is using
+    SDL_Texture         *texture;                               // SDL texture that is updated and displayed each frame
+
+} sdlstructures_t;
+
 typedef struct simulation_t
 {
     
-    bool                running;                                // simulation on/off
-    uint8_t             FPS;                                    // how many times the simulation is updated per second
+    sdlstructures_t     *sdl;                                    // SDL objects used by the simluation
+    simproperties_t     *properties;                             // simulation properties
+    userinteractions_t  *userinteractions;                       // structure of possible user interactions
+    fieldproperties_t   *fieldproperties;                        // physics field properties
 
-    SDL_Renderer        *renderer;                              // SDL renderer the simulation is using
-    void                (*sdl_renderer_init)(SDL_Renderer *);
-
-    SDL_Window          *window;                                // SDL window the simulation is using
-    void                (*sdl_window_init)(SDL_Window *);
-
-    SDL_Texture         *texture;                               // SDL texture that is updated and displayed each frame
-    void                (*sdl_texture_init)(SDL_Texture *);
-
-    simobject_t         *simobjects;                            // array of objects in the simulation
-    userinteractions_t  userinteractions;                       // structure of possible user interactions
+    simobject_t         *objects;                               // array of (pointers to) objects in the simulation
+    simobject_t         simborder;                              // simulation border object for object collisions
 
 } simulation_t;
 

@@ -12,12 +12,19 @@
 /* ---------------------------------------------------------------------------------------- */
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_render.h>
+#include <SDL2/SDL_surface.h>
+#include <SDL2/SDL_video.h>
 #include "../inc/common.h"
 #include "../inc/eventhandler.h"
 #include "../inc/simobject.h"
 #include "../inc/simulation.h"
 
 /* ---------------------------------------------------------------------------------------- */
+
+static void simulation_render_objects(simulation_t *sim);
+static void simulation_update_object_states(simulation_t *sim);
+static void simulation_init_background(simulation_t *sim);
 
 static void sdl_initialize(simulation_t *sim);
 static void sdl_report_error(void);
@@ -27,15 +34,50 @@ static void sdl_report_error(void);
 void simulation_init(simulation_t *sim)
 {
 
+    // allocate memory for all the simulation structures
+    sim->sdl              = malloc(sizeof(sdlstructures_t));
+    sim->properties       = malloc(sizeof(simproperties_t));
+    sim->userinteractions = malloc(sizeof(simproperties_t));
+    sim->fieldproperties  = malloc(sizeof(fieldproperties_t));
+    sim->objects          = malloc(sizeof(simobject_t) * SIMULATION_NUM_OBJECTS);
+
+    // set up SDL2
     sdl_initialize(sim);
 
-    sim->simobjects = malloc(sizeof(simobject_t) * 1);
+    // set window size members
+    SDL_GetWindowSize(sim->sdl->window, &sim->properties->windowLength, &sim->properties->windowHeight);
 
-    sim->userinteractions.space_pressed = false;
-    sim->userinteractions.escape_pressed = false;
+    // set simulation properties
+    sim->fieldproperties->timestep = 1.0f;
 
-    sim->FPS = SIMULATION_FPS;
-    sim->running = true;
+    sim->fieldproperties->xvel_constant = 1.0f;
+    sim->fieldproperties->yvel_constant = 0.0f;
+
+    sim->fieldproperties->xacc_constant = 0.0f;
+    sim->fieldproperties->yacc_constant = -9.81f;
+
+    simobject_t object =
+    {
+        .width  = 25.0,
+        .height = 25.0,
+        .mass   = 5.0,
+        .x_pos  = 500.0,
+        .y_pos  = 500.0,
+        .x_vel  = 0.0,
+        .y_vel  = 0.0,
+        .x_acc  = 0.0,
+        .y_acc  = 0.0,
+    };
+
+    sim->objects[0] = object;
+
+    // set user interaction default states
+    sim->userinteractions->space_pressed = false;
+    sim->userinteractions->escape_pressed = false;
+
+    // set simulation characteristics
+    sim->properties->fps = SIMULATION_FPS;
+    sim->properties->running = true;
 
 }
 
@@ -43,8 +85,10 @@ void simulation_init(simulation_t *sim)
 void simulation_start(simulation_t *sim)
 {
 
+    //simulation_init_background(sim);
+
     SDL_Event event;
-    while(sim->running)
+    while(sim->properties->running)
     {
         
         // check for SDL-related events first before updating the simulation's state 
@@ -69,32 +113,15 @@ void simulation_start(simulation_t *sim)
                     break;
             }
         }
-    
-        // wipe the screen
-        SDL_SetRenderDrawColor(sim->renderer, 0, 0, 0, 255);
-        SDL_RenderClear(sim->renderer);
 
-        // get updated state of each object in the simulation
-        if (sim->userinteractions.space_pressed)
-        {
-            printf("hello!\n");
-        }
+        // update state of each object in the simulation
+        simulation_update_object_states(sim);
 
-        SDL_Rect rect = {10, 10, 800, 600};
-
-        // update the texture via blitting (SDL_RenderCopy seems to be the way?)
-        SDL_SetRenderTarget(sim->renderer, sim->texture);
-        SDL_SetRenderDrawColor(sim->renderer, 0x00, 0xC0, 0xE0, 0xF0);
-        SDL_RenderClear(sim->renderer);
-        SDL_RenderDrawRect(sim->renderer, &rect);
-        SDL_SetRenderDrawColor(sim->renderer, 0xFF, 0x00, 0x00, 0x00);
-        SDL_RenderFillRect(sim->renderer, &rect);
-        SDL_SetRenderTarget(sim->renderer, NULL);
-        SDL_RenderCopy(sim->renderer, sim->texture, NULL, NULL);
-        SDL_RenderPresent(sim->renderer);
+        // update the render
+        simulation_render_objects(sim);
 
         // wait for 1 frame before looping again so we can achieve 60 FPS
-        SDL_Delay(1000/sim->FPS);
+        SDL_Delay(1000/sim->properties->fps);
 
     }
     
@@ -107,13 +134,63 @@ void simulation_start(simulation_t *sim)
 void simulation_kill(simulation_t *sim)
 {
 
-    if (sim->window)   SDL_DestroyWindow(sim->window);
-    if (sim->renderer) SDL_DestroyRenderer(sim->renderer);
+    if (sim->sdl->window)   SDL_DestroyWindow(sim->sdl->window);
+    if (sim->sdl->renderer) SDL_DestroyRenderer(sim->sdl->renderer);
 
-    free(sim->simobjects);
+    free(sim->objects);
     free(sim);
 
     SDL_Quit();
+
+}
+
+/* ---------------------------------------------------------------------------------------- */
+
+static void simulation_init_background(simulation_t *sim)
+{
+    
+    const SDL_Rect background = { 0, 0, sim->properties->windowLength, sim->properties->windowHeight };
+
+    SDL_SetRenderDrawColor(sim->sdl->renderer, 0xFF, 0xAA, 0xCC, 0xA0);                  // set the color
+    SDL_RenderFillRect(sim->sdl->renderer, &background);                                 // fill
+
+    SDL_RenderPresent(sim->sdl->renderer);                                               // update screen
+
+}
+
+static void simulation_update_object_states(simulation_t *sim)
+{
+
+    for(uint32_t i = 0; i < SIMULATION_NUM_OBJECTS; i++)
+    {
+        simobject_update_state(&sim->objects[i], *sim->fieldproperties);
+    }
+
+}
+
+static void simulation_render_objects(simulation_t *sim)
+{
+
+    simobject_t obj;
+
+    SDL_SetRenderDrawColor(sim->sdl->renderer, 0x00, 0x00, 0x00, 0xFF);
+    SDL_RenderClear(sim->sdl->renderer);
+
+    for (uint32_t i = 0; i < SIMULATION_NUM_OBJECTS; i++)
+    {
+        obj = sim->objects[i];                                                  
+
+        float window_x_pos = sim->properties->windowHeight - obj.x_pos;                  // convert object's x-y coordinates to window coordinates
+        float window_y_pos = sim->properties->windowLength - obj.y_pos;
+
+        SDL_FRect rect = { window_x_pos, window_y_pos, obj.height, obj.width };          // create rectangle from the object's state
+
+        SDL_SetRenderDrawColor(sim->sdl->renderer, 0xFF, 0x00, 0x00, 0xFF);              // set object color
+        SDL_RenderDrawRectF(sim->sdl->renderer, &rect);                                  // draw object
+        SDL_RenderFillRectF(sim->sdl->renderer, &rect);                                  // color fill)
+    }
+
+    SDL_RenderPresent(sim->sdl->renderer);
 
 }
 
@@ -127,20 +204,20 @@ static void sdl_initialize(simulation_t *sim)
         sdl_report_error();
     }
 
-    sim->window = SDL_CreateWindow("Hello World!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
-    if (!sim->window)
+    sim->sdl->window = SDL_CreateWindow("Hello World!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, 0);
+    if (!sim->sdl->window)
     {
         sdl_report_error();
     }
 
-    sim->renderer = SDL_CreateRenderer(sim->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
-    if (!sim->renderer)
+    sim->sdl->renderer = SDL_CreateRenderer(sim->sdl->window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE);
+    if (!sim->sdl->renderer)
     {
         sdl_report_error();
     }
 
-    sim->texture = SDL_CreateTexture(sim->renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WINDOW_WIDTH * TEXTURE_SCALING_FACTOR, WINDOW_HEIGHT * TEXTURE_SCALING_FACTOR);
-    if (!sim->texture)
+    sim->sdl->texture = SDL_CreateTexture(sim->sdl->renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WINDOW_WIDTH * TEXTURE_SCALING_FACTOR, WINDOW_HEIGHT * TEXTURE_SCALING_FACTOR);
+    if (!sim->sdl->texture)
     {
         sdl_report_error();
     }

@@ -14,7 +14,7 @@
 
 void evt_sdl_quit_handler(SDL_Event *event, simulation_t *sim)
 {
-    sim->running = false;
+    sim->properties->running = false;
 }
 
 void evt_sdl_keydown_handler(SDL_Event *event, simulation_t *sim)
@@ -24,11 +24,11 @@ void evt_sdl_keydown_handler(SDL_Event *event, simulation_t *sim)
     {
 
         case SDL_SCANCODE_SPACE:
-            sim->userinteractions.space_pressed = true;
+            sim->userinteractions->space_pressed = true;
             break;
 
         case SDL_SCANCODE_ESCAPE:
-            sim->userinteractions.escape_pressed = true;
+            sim->userinteractions->escape_pressed = true;
             break;
 
         default:
@@ -44,11 +44,11 @@ void evt_sdl_keyup_handler(SDL_Event *event, simulation_t *sim)
     {
 
         case SDL_SCANCODE_SPACE:
-            sim->userinteractions.space_pressed = false;
+            sim->userinteractions->space_pressed = false;
             break;
 
         case SDL_SCANCODE_ESCAPE:
-            sim->userinteractions.escape_pressed = false;
+            sim->userinteractions->escape_pressed = false;
 
         default:
             break;
