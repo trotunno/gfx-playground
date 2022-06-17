@@ -30,5 +30,4 @@ int main(int argc, char **argv)
 
     simulation_start(simulation);
 
-    return 0;
 }

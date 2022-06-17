@@ -47,7 +47,7 @@ void simulation_init(simulation_t *sim)
     // set window size members
     SDL_GetWindowSize(sim->sdl->window, &sim->properties->windowLength, &sim->properties->windowHeight);
 
-    // set simulation properties
+    // set field properties
     sim->fieldproperties->timestep = 1.0f;
 
     sim->fieldproperties->xvel_constant = 1.0f;
@@ -56,20 +56,10 @@ void simulation_init(simulation_t *sim)
     sim->fieldproperties->xacc_constant = 0.0f;
     sim->fieldproperties->yacc_constant = -9.81f;
 
-    simobject_t object =
-    {
-        .width  = 25.0,
-        .height = 25.0,
-        .mass   = 5.0,
-        .x_pos  = 500.0,
-        .y_pos  = 500.0,
-        .x_vel  = 0.0,
-        .y_vel  = 0.0,
-        .x_acc  = 0.0,
-        .y_acc  = 0.0,
-    };
-
-    sim->objects[0] = object;
+    sim->fieldproperties->positive_x_boundary = sim->properties->windowLength /  2.0f;
+    sim->fieldproperties->negative_x_boundary = sim->properties->windowLength / -2.0f;
+    sim->fieldproperties->positive_y_boundary = sim->properties->windowHeight /  2.0f;
+    sim->fieldproperties->negative_x_boundary = sim->properties->windowHeight / -2.0f;
 
     // set user interaction default states
     sim->userinteractions->space_pressed = false;
@@ -136,8 +126,14 @@ void simulation_kill(simulation_t *sim)
 
     if (sim->sdl->window)   SDL_DestroyWindow(sim->sdl->window);
     if (sim->sdl->renderer) SDL_DestroyRenderer(sim->sdl->renderer);
+    if (sim->sdl->texture)  SDL_DestroyTexture(sim->sdl->texture);
 
+    free(sim->sdl);
+    free(sim->properties);
+    free(sim->userinteractions);
+    free(sim->fieldproperties);
     free(sim->objects);
+    
     free(sim);
 
     SDL_Quit();

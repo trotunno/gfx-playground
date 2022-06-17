@@ -13,6 +13,7 @@
 #include <SDL2/SDL.h>
 #include "common.h"
 
+// contains properties of the field the object's physics must adhere to
 typedef struct fieldproperties_t
 {
 
@@ -23,6 +24,11 @@ typedef struct fieldproperties_t
 
     float xacc_constant;
     float yacc_constant;
+
+    float positive_x_boundary;
+    float negative_x_boundary;
+    float positive_y_boundary;
+    float negative_y_boundary;
 
 } fieldproperties_t;
 
