@@ -16,7 +16,7 @@
 #define WINDOW_HEIGHT 648
 
 #define SIMULATION_FPS 60
-#define SIMULATION_NUM_OBJECTS 1
+#define SIMULATION_NUM_OBJECTS 3
 #define SIMULATION_CONSTANT_ACCELRATION 1
 
 /* ---------------------------------------------------------------------------------------- */
@@ -35,6 +35,8 @@ typedef struct simproperties_t
 
     int32_t             windowHeight;                           // the window's height in screen coordinates
     int32_t             windowLength;                           // the window's length in screen coordinates
+    int32_t             windowPos_x;                            // the window's x position in screen coordinates
+    int32_t             windowPos_y;                            // the window's y position in screen coordinates
 
     SDL_FRect           background;                             // rectangle containing the background's information
     SDL_FRect           border;                                 // rectangle containing the border's information

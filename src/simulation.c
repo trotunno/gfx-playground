@@ -32,6 +32,8 @@ static void simulation_init_border(simulation_t *sim);
 
 static void sdl_initialize(simulation_t *sim);
 static void sdl_process_events(simulation_t *sim);
+static void sdl_redraw_background(simulation_t *sim);
+static void sdl_redraw_border(simulation_t *sim);
 static void sdl_report_error(void);
 
 /* ---------------------------------------------------------------------------------------- */
@@ -50,10 +52,11 @@ void simulation_init(simulation_t *sim)
     sdl_initialize(sim);
 
     // set simulation properties
-    int windowLength, windowHeight;
     SDL_GetWindowSize(sim->sdl->window, &sim->properties->windowLength, &sim->properties->windowHeight);
+    SDL_GetWindowPosition(sim->sdl->window, &sim->properties->windowPos_x, &sim->properties->windowPos_y);
 
     printf("window length: %d\nwindow height: %d\n", sim->properties->windowLength, sim->properties->windowHeight);
+    printf("window pos_x: %d\nwindow pos_y: %d\n", sim->properties->windowPos_x, sim->properties->windowPos_y);
 
     sim->properties->fps = SIMULATION_FPS;
     sim->properties->running = true;
@@ -71,10 +74,10 @@ void simulation_init(simulation_t *sim)
     sim->fieldproperties->yacc_constant = -9.81f;
 
     //^ TODO: this doesn't work how it's s'posed to!!
-    sim->fieldproperties->positive_x_boundary = (float)sim->properties->windowLength * 0.2f;
-    sim->fieldproperties->negative_x_boundary = (float)sim->properties->windowHeight * 0.2f;
-    sim->fieldproperties->positive_y_boundary = (float)sim->properties->windowLength * 0.6f;
-    sim->fieldproperties->negative_y_boundary = (float)sim->properties->windowHeight * 0.6f;
+    sim->fieldproperties->positive_x_boundary = (float)((sim->properties->windowPos_x) + (sim->properties->windowLength * 0.8f));
+    sim->fieldproperties->negative_x_boundary = (float)((sim->properties->windowPos_x) + (sim->properties->windowLength * 0.2f));
+    sim->fieldproperties->positive_y_boundary = (float)((sim->properties->windowPos_y) + (sim->properties->windowHeight * 0.2f));
+    sim->fieldproperties->negative_y_boundary = (float)((sim->properties->windowPos_y) + (sim->properties->windowHeight * 0.8f));
 
     printf("positive x boundary = %f\n", sim->fieldproperties->positive_x_boundary);
     printf("negative x boundary = %f\n", sim->fieldproperties->negative_x_boundary);
@@ -86,7 +89,9 @@ void simulation_init(simulation_t *sim)
     simulation_init_border(sim);
 
     //! add an object to the simulation
-    createObject(10, 0, 0, 0, 0, 0, 0);
+    sim->objects[0] = createObject(10, 20, 0, 0, 0, 0, 0);
+    sim->objects[1] = createObject(10, -20, 0, 0, 0, 0, 0);
+    sim->objects[2] = createObject(10, 0, 0, 0, 0, 0, 0);
 
 }
 
@@ -155,16 +160,15 @@ static void simulation_init_background(simulation_t *sim)
 static void simulation_init_border(simulation_t *sim)
 {
 
-    int border_anchor_x = sim->fieldproperties->negative_x_boundary;
-    int border_anchor_y = sim->fieldproperties->positive_y_boundary;
-    int border_width    = sim->fieldproperties->positive_x_boundary - sim->fieldproperties->negative_x_boundary;
-    int border_height   = sim->fieldproperties->positive_y_boundary - sim->fieldproperties->negative_y_boundary;
+    float border_anchor_x = sim->fieldproperties->negative_x_boundary;
+    float border_anchor_y = sim->fieldproperties->positive_y_boundary;
+    float border_length   = sim->fieldproperties->positive_x_boundary - sim->fieldproperties->negative_x_boundary;
+    float border_height   = sim->fieldproperties->negative_y_boundary - sim->fieldproperties->positive_y_boundary;
 
-    const SDL_FRect border = { border_anchor_x, border_anchor_y, border_width, border_height };
+    const SDL_FRect border = { border_anchor_x, border_anchor_y, border_length, border_height };
 
     SDL_SetRenderDrawColor(sim->sdl->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderDrawRectF(sim->sdl->renderer, &border);
-    SDL_RenderClear(sim->sdl->renderer);
     SDL_RenderPresent(sim->sdl->renderer);
 
     sim->properties->border = border;
@@ -188,11 +192,14 @@ static void simulation_render_objects(simulation_t *sim)
 
     simobject_t obj;
 
-    float window_x_origin = (float)sim->properties->border.w / 2.0f;
-    float window_y_origin = (float)sim->properties->border.h / 2.0f;
+    uint8_t objectColors[SIMULATION_NUM_OBJECTS][3] = { {0xFF, 0xAA, 0x43}, {0xFF, 0x00, 0x00}, {0x00, 0xFF, 0x00} };
 
-    printf("border.w = %f\n", sim->properties->border.w);
-    printf("border.h = %f\n", sim->properties->border.h);
+    // retrieve the x and y origins in window space
+    float window_x_origin = sim->properties->border.x + (sim->properties->border.w / 2.0f);
+    float window_y_origin = sim->properties->border.y + (sim->properties->border.h / 2.0f);
+
+    sdl_redraw_background(sim);
+    sdl_redraw_border(sim);
 
     for (uint32_t i = 0; i < SIMULATION_NUM_OBJECTS; i++)
     {
@@ -203,16 +210,17 @@ static void simulation_render_objects(simulation_t *sim)
         float window_x_pos = window_x_origin + obj.x_pos;
         float window_y_pos = window_y_origin - obj.y_pos;
 
-        printf("obj.x_pos = %f\n", obj.x_pos);
-        printf("obj.y_pos = %f\n", obj.y_pos);
-        printf("window_x_pos = %f\n", window_x_pos);
-        printf("window_y_pos = %f\n", window_y_pos);
-
         // create rectangle from the object's current state
         SDL_FRect rect = { window_x_pos, window_y_pos, obj.height, obj.width };
 
+        uint8_t r = objectColors[i][0];
+        uint8_t g = objectColors[i][1];
+        uint8_t b = objectColors[i][2];
+
+        printf("r = 0x%02X, g = 0x%02X, b = 0x%02X\n", r, g, b);
+
         // set object color
-        if (SDL_SetRenderDrawColor(sim->sdl->renderer, 0xFF, 0xAA, 0x43, 0xFF))         
+        if (SDL_SetRenderDrawColor(sim->sdl->renderer, r, g, b, 0xFF))         
         {
             sdl_report_error();
         }             
@@ -230,14 +238,14 @@ static void simulation_render_objects(simulation_t *sim)
         }
         
         // clear rendering target properties
-        if (SDL_RenderClear(sim->sdl->renderer))
-        {
-            sdl_report_error();
-        }
+        //if (SDL_RenderClear(sim->sdl->renderer))
+        //{
+            //sdl_report_error();
+        //}
+
+        SDL_RenderPresent(sim->sdl->renderer);
 
     }
-
-    SDL_RenderPresent(sim->sdl->renderer);
 
 }
 
@@ -299,6 +307,26 @@ static void sdl_process_events(simulation_t *sim)
                 break;
         }
     }
+
+}
+
+static void sdl_redraw_background(simulation_t *sim)
+{
+
+    SDL_SetRenderDrawColor(sim->sdl->renderer, 0x00, 0x00, 0x00, 0x00);
+    SDL_RenderDrawRectF(sim->sdl->renderer, &sim->properties->background);
+    SDL_RenderFillRectF(sim->sdl->renderer, &sim->properties->background);
+    SDL_RenderClear(sim->sdl->renderer);
+    SDL_RenderPresent(sim->sdl->renderer);
+
+}
+
+static void sdl_redraw_border(simulation_t *sim)
+{
+
+    SDL_SetRenderDrawColor(sim->sdl->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
+    SDL_RenderDrawRectF(sim->sdl->renderer, &sim->properties->border);
+    SDL_RenderPresent(sim->sdl->renderer);
 
 }
 

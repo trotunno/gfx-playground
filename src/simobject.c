@@ -7,6 +7,8 @@
 
 /* ---------------------------------------------------------------------------------------- */
 
+#include <float.h>
+
 #include "../inc/common.h"
 #include "../inc/simulation.h"
 #include "../inc/simobject.h"
@@ -19,12 +21,15 @@ static void simobject_update_position(simobject_t *obj, fieldproperties_t props)
 
 /* ---------------------------------------------------------------------------------------- */
 
-void createObject(float mass, float x_pos, float y_pos, float x_vel, float y_vel, float x_acc, float y_acc)
+simobject_t * createObject(float mass, float x_pos, float y_pos, float x_vel, float y_vel, float x_acc, float y_acc)
 {
 
     simobject_t *obj = malloc(sizeof(simobject_t));
 
     obj->mass = mass;
+
+    obj->width = mass * 0.5f;
+    obj->height = mass * 0.5f;
 
     obj->x_pos = x_pos;
     obj->y_pos = y_pos;
@@ -32,6 +37,8 @@ void createObject(float mass, float x_pos, float y_pos, float x_vel, float y_vel
     obj->y_vel = y_vel;
     obj->x_acc = x_acc;
     obj->y_acc = y_acc;
+
+    return obj;
 
 }
 
