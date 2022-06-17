@@ -4,11 +4,11 @@ CC=gcc -o
 # compiler flags
 CFLAGS=-g -O0 -std=c11 -Werror
 
-# linker flags
-LFLAGS=-lm -lSDL2
+# library links
+LFLAGS=-lm -LC:/msys64/mingw64/lib -lSDL2 -mwindows
 
 # include paths
-INCLUDE=-I/inc -I/inc/SDL2
+INCLUDE=-I/inc -IC:/msys64/mingw64/include/SDL2
 
 # source files
 CFILES= src/simobject.c src/simulation.c src/eventhandler.c src/main.c 
