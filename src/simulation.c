@@ -73,25 +73,26 @@ void simulation_init(simulation_t *sim)
     sim->fieldproperties->xacc_constant =  0.0f;
     sim->fieldproperties->yacc_constant = -9.81f;
 
-    //^ TODO: this doesn't work how it's s'posed to!!
     sim->fieldproperties->positive_x_boundary = (float)((sim->properties->windowPos_x) + (sim->properties->windowLength * 0.8f));
     sim->fieldproperties->negative_x_boundary = (float)((sim->properties->windowPos_x) + (sim->properties->windowLength * 0.2f));
     sim->fieldproperties->positive_y_boundary = (float)((sim->properties->windowPos_y) + (sim->properties->windowHeight * 0.2f));
     sim->fieldproperties->negative_y_boundary = (float)((sim->properties->windowPos_y) + (sim->properties->windowHeight * 0.8f));
 
+    //^
     printf("positive x boundary = %f\n", sim->fieldproperties->positive_x_boundary);
     printf("negative x boundary = %f\n", sim->fieldproperties->negative_x_boundary);
     printf("positive y boundary = %f\n", sim->fieldproperties->positive_y_boundary);
     printf("negative y boundary = %f\n", sim->fieldproperties->negative_y_boundary);
+    //^
 
     // initialize the background & border for the simulation
     simulation_init_background(sim);
     simulation_init_border(sim);
 
     //! add an object to the simulation
-    sim->objects[0] = createObject(10, 20, 0, 0, 0, 0, 0);
-    sim->objects[1] = createObject(10, -20, 0, 0, 0, 0, 0);
-    sim->objects[2] = createObject(10, 0, 0, 0, 0, 0, 0);
+    sim->objects[0] = createObject(35, 100, 0, 0, 0, 0, 0);
+    sim->objects[1] = createObject(35, -100, 0, 0, 0, 0, 0);
+    sim->objects[2] = createObject(35, 0, 0, 0, 0, 0, 0);
 
 }
 
@@ -217,8 +218,6 @@ static void simulation_render_objects(simulation_t *sim)
         uint8_t g = objectColors[i][1];
         uint8_t b = objectColors[i][2];
 
-        printf("r = 0x%02X, g = 0x%02X, b = 0x%02X\n", r, g, b);
-
         // set object color
         if (SDL_SetRenderDrawColor(sim->sdl->renderer, r, g, b, 0xFF))         
         {
@@ -236,16 +235,10 @@ static void simulation_render_objects(simulation_t *sim)
         {
             sdl_report_error();
         }
-        
-        // clear rendering target properties
-        //if (SDL_RenderClear(sim->sdl->renderer))
-        //{
-            //sdl_report_error();
-        //}
-
-        SDL_RenderPresent(sim->sdl->renderer);
 
     }
+
+    SDL_RenderPresent(sim->sdl->renderer);
 
 }
 
@@ -316,8 +309,6 @@ static void sdl_redraw_background(simulation_t *sim)
     SDL_SetRenderDrawColor(sim->sdl->renderer, 0x00, 0x00, 0x00, 0x00);
     SDL_RenderDrawRectF(sim->sdl->renderer, &sim->properties->background);
     SDL_RenderFillRectF(sim->sdl->renderer, &sim->properties->background);
-    SDL_RenderClear(sim->sdl->renderer);
-    SDL_RenderPresent(sim->sdl->renderer);
 
 }
 
@@ -326,7 +317,6 @@ static void sdl_redraw_border(simulation_t *sim)
 
     SDL_SetRenderDrawColor(sim->sdl->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderDrawRectF(sim->sdl->renderer, &sim->properties->border);
-    SDL_RenderPresent(sim->sdl->renderer);
 
 }
 
