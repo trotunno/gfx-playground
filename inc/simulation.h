@@ -15,9 +15,10 @@
 #define WINDOW_WIDTH 1152
 #define WINDOW_HEIGHT 648
 
-#define SIMULATION_FPS 60
-#define SIMULATION_NUM_OBJECTS 3
-#define SIMULATION_CONSTANT_ACCELRATION 1
+#define SIMULATION_FPS 1
+#define SIMULATION_NUM_OBJECTS 1
+#define SIMULATION_CONSTANT_ACCELERATION 1
+#define SIMULATION_PERFECTLY_ELASTIC 1
 
 /* ---------------------------------------------------------------------------------------- */
 

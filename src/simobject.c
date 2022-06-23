@@ -8,6 +8,7 @@
 /* ---------------------------------------------------------------------------------------- */
 
 #include <float.h>
+#include <math.h>
 
 #include "../inc/common.h"
 #include "../inc/simulation.h"
@@ -17,6 +18,7 @@
 
 static void simobject_update_acceleration(simobject_t *obj, fieldproperties_t props);
 static void simobject_update_velocity(simobject_t *obj, fieldproperties_t props);
+static void simobject_update_momentum(simobject_t *obj, fieldproperties_t props);
 static void simobject_update_position(simobject_t *obj, fieldproperties_t props);
 
 /* ---------------------------------------------------------------------------------------- */
@@ -52,6 +54,7 @@ void simobject_update_state(simobject_t *obj, fieldproperties_t props)
 
     simobject_update_acceleration(obj, props);
     simobject_update_velocity(obj, props);
+    simobject_update_momentum(obj, props);
     simobject_update_position(obj, props);
 
 }
@@ -61,7 +64,7 @@ void simobject_update_state(simobject_t *obj, fieldproperties_t props)
 static void simobject_update_acceleration(simobject_t *obj, fieldproperties_t props)
 {
 
-    #if (SIMULATION_CONSTANT_ACCELRATION)
+    #if (SIMULATION_CONSTANT_ACCELERATION)
     {
         obj->x_acc = props.xacc_constant;
         obj->y_acc = props.yacc_constant;
@@ -75,11 +78,25 @@ static void simobject_update_velocity(simobject_t *obj, fieldproperties_t props)
 
     float dt = props.timestep;
 
-    #if (SIMULATION_CONSTANT_ACCELRATION)
+    #if (SIMULATION_CONSTANT_ACCELERATION)
     {
         // dv = int(a*dt) ... a == constant so... dv = at
         obj->x_vel += props.xvel_constant + (obj->x_acc * dt);
         obj->y_vel += props.yvel_constant + (obj->y_acc * dt);
+    }
+    #endif
+
+}
+
+static void simobject_update_momentum(simobject_t *obj, fieldproperties_t props)
+{
+
+    float dt = props.timestep;
+
+    #if (SIMULATION_CONSTANT_ACCELERATION)
+    {
+        // p = m*||v||
+        obj->momentum = obj->mass * sqrt( (obj->x_vel * obj->x_vel) + (obj->y_vel * obj->y_vel) );
     }
     #endif
 
@@ -90,7 +107,7 @@ static void simobject_update_position(simobject_t *obj, fieldproperties_t props)
 
     float dt = props.timestep;
 
-    #if (SIMULATION_CONSTANT_ACCELRATION)
+    #if (SIMULATION_CONSTANT_ACCELERATION)
     {
         // dx = int(v*dt)
         obj->x_pos += (obj->x_vel * dt) + ( 0.5f * (obj->x_acc * dt) );

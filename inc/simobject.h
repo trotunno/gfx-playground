@@ -45,6 +45,8 @@ typedef struct simobject_t
     float x_vel, y_vel;
     float x_acc, y_acc;
 
+    float momentum;
+
 } simobject_t;
 
 /* ---------------------------------------------------------------------------------------- */
