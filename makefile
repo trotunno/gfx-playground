@@ -5,13 +5,13 @@ CC=gcc -o
 CFLAGS=-g -O0 -std=c11 -Werror
 
 # library links
-LFLAGS=-lm -LC:/msys64/mingw64/lib -lSDL2 -mwindows
+LFLAGS=-lm -LC:/msys64/mingw64/lib -lSDL2
 
 # include paths
 INCLUDE=-I/inc -IC:/msys64/mingw64/include/SDL2
 
 # source files
-CFILES= src/simobject.c src/simulation.c src/eventhandler.c src/main.c 
+CFILES= src/common.c src/simobject.c src/simulation.c src/eventhandler.c src/main.c 
 
 # header files
 HFILES=inc/common.h inc/simobject.h inc/userinteractions.h inc/simulation.h inc/eventhandler.h inc/main.h
@@ -23,7 +23,7 @@ BUILD=builds
 BINARY=$(BUILD)/gfx-playground.exe
 
 # file descriptor that allows for output to be piped into oblivion, never to be seen again
-FD=</dev/null >/dev/null 2>&1 &
+#FD=</dev/null >/dev/null 2>&1 &
 
 # default build target
 all: gfx-playground

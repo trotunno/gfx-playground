@@ -23,7 +23,12 @@ static void simobject_update_position(simobject_t *obj, fieldproperties_t props)
 
 /* ---------------------------------------------------------------------------------------- */
 
-simobject_t * createObject(float mass, float x_pos, float y_pos, float x_vel, float y_vel, float x_acc, float y_acc)
+//* TODO: make these function arguments variadic, default values all == 0
+simobject_t * createObject
+(
+    float mass, float x_pos, float y_pos, float x_vel, float y_vel, float x_acc, float y_acc,
+    float intr_x_vel, float intr_y_vel, float intr_x_acc, float intr_y_acc
+)
 {
 
     simobject_t *obj = malloc(sizeof(simobject_t));
@@ -39,6 +44,11 @@ simobject_t * createObject(float mass, float x_pos, float y_pos, float x_vel, fl
     obj->y_vel = y_vel;
     obj->x_acc = x_acc;
     obj->y_acc = y_acc;
+
+    obj->intr_x_vel = intr_x_vel;
+    obj->intr_y_vel = intr_y_vel;
+    obj->intr_x_acc = intr_x_acc;
+    obj->intr_y_acc = intr_y_acc;
 
     return obj;
 
@@ -80,9 +90,9 @@ static void simobject_update_velocity(simobject_t *obj, fieldproperties_t props)
 
     #if (SIMULATION_CONSTANT_ACCELERATION)
     {
-        // dv = int(a*dt) ... a == constant so... dv = at
-        obj->x_vel += props.xvel_constant + (obj->x_acc * dt);
-        obj->y_vel += props.yvel_constant + (obj->y_acc * dt);
+        // dv = int(adt) ... a == constant so... dv = at
+        obj->x_vel += props.xvel_constant + ((obj->x_acc * dt) + (obj->intr_x_acc * dt));
+        obj->y_vel += props.yvel_constant + ((obj->y_acc * dt) + (obj->intr_y_acc * dt));
     }
     #endif
 
@@ -95,7 +105,7 @@ static void simobject_update_momentum(simobject_t *obj, fieldproperties_t props)
 
     #if (SIMULATION_CONSTANT_ACCELERATION)
     {
-        // p = m*||v||
+        // p = m||v||
         obj->momentum = obj->mass * sqrt( (obj->x_vel * obj->x_vel) + (obj->y_vel * obj->y_vel) );
     }
     #endif
@@ -109,7 +119,7 @@ static void simobject_update_position(simobject_t *obj, fieldproperties_t props)
 
     #if (SIMULATION_CONSTANT_ACCELERATION)
     {
-        // dx = int(v*dt)
+        // dx = int(vdt)
         obj->x_pos += (obj->x_vel * dt) + ( 0.5f * (obj->x_acc * dt) );
         obj->y_pos += (obj->y_vel * dt) + ( 0.5f * (obj->y_acc * dt) );
     }

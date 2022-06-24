@@ -45,6 +45,9 @@ typedef struct simobject_t
     float x_vel, y_vel;
     float x_acc, y_acc;
 
+    float intr_x_vel, intr_y_vel;
+    float intr_x_acc, intr_y_acc;
+
     float momentum;
 
 } simobject_t;
@@ -52,8 +55,11 @@ typedef struct simobject_t
 /* ---------------------------------------------------------------------------------------- */
 
 void destroyObject(simobject_t *obj);
-simobject_t* createObject(float mass, float x_pos, float y_pos, float x_vel, float y_vel, float x_acc, float y_acc);
-
+simobject_t* createObject
+(
+    float mass, float x_pos, float y_pos, float x_vel, float y_vel, float x_acc, float y_acc,
+    float intr_x_vel, float intr_y_vel, float intr_x_acc, float intr_y_acc
+);
 void simobject_update_state(simobject_t *obj, fieldproperties_t props);
 
 #endif

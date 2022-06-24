@@ -7,10 +7,10 @@
 
 #define SDL_MAIN_HANDLED
 
+#include <stdio.h>
+#include <stdbool.h>
+
 #include "../inc/SDL2/SDL.h"
-#include "../inc/SDL2/SDL_render.h"
-#include "../inc/SDL2/SDL_video.h"
-#include "../inc/SDL2/SDL_surface.h"
 #include "../inc/main.h"
 #include "../inc/simulation.h"
 #include "../inc/simobject.h"
@@ -20,18 +20,37 @@
 int main(int argc, char **argv)
 {   
 
-    simulation_t *simulation = malloc(sizeof(simulation_t));
+    char input;
 
-    printf("initializing...\n");
+    // disable stdout buffering
+    setbuf(stdout, NULL);
 
-    simulation_init(simulation);
+    simulation_t *simulation;
 
-    printf("starting sim...\n");
+    while(1)
+    {
 
-    simulation_start(simulation);
+        simulation = malloc(sizeof(simulation_t));
 
-    printf("killing sim...\n");
+        printf("initializing...\n");
+        simulation_init(simulation);
 
-    simulation_kill(simulation);
+        printf("starting sim...\n");
+        simulation_start(simulation);
+
+        //* TODO: stop this from making me lose focus on my console window
+        printf("killing sim...\n");
+        simulation_kill(simulation);
+ 
+        for (uint8_t i = 3; i >= 1; i--)
+        {
+            printf("restarting in %d...\n", i);
+            sdelay(1);
+        }
+
+    }
+
+    return 0;
 
 }
+
