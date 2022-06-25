@@ -104,9 +104,9 @@ void simulation_init(simulation_t *sim)
     simulation_init_border(sim);
 
     //! add an object to the simulation
-    sim->objects[0] = createObject(50, 0, 0, 0, 0, 0, 0, 0.1, 0, 0, 0.15);
-    sim->objects[1] = createObject(150, 0, 0, 0, 0, 0, 0, 0.2, 0, 0, -0.2);
-    sim->objects[2] = createObject(35, 0, 0, 0, 0, 0, 0, -0.1, 0, 0, -0.1);
+    sim->objects[0] = createObject(100, 0, -100, 0, 0, 0, 0, 0.1, 0, 0, 0.15);
+    sim->objects[1] = createObject(50, 0, 0, 0, 0, 0, 0, 0.2, 0, 0, -0.2);
+    sim->objects[2] = createObject(50, 0, 0, 0, 0, 0, 0, -0.1, 0, 0, -0.1);
 
 }
 
@@ -221,7 +221,7 @@ static uint8_t* simulation_check_collisions(simulation_t *sim, simobject_t* obj[
 
         // convert object's x-y coordinates to window coordinates
         rect1.x = window_x_origin + obj1.x_pos;
-        rect1.y = window_y_origin - obj1.y_pos; 
+        rect1.y = window_y_origin + obj1.y_pos; 
         rect1.w = obj1.width;
         rect1.h = obj1.height;
 
@@ -234,7 +234,7 @@ static uint8_t* simulation_check_collisions(simulation_t *sim, simobject_t* obj[
 
             // convert object's x-y coordinates to window coordinates
             rect2.x = window_x_origin + obj2.x_pos;
-            rect2.y = window_y_origin - obj2.y_pos; 
+            rect2.y = window_y_origin + obj2.y_pos; 
             rect2.w = obj2.width;
             rect2.h = obj2.height;
 
