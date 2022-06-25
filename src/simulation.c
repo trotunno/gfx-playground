@@ -23,6 +23,7 @@
 #include "../inc/eventhandler.h"
 #include "../inc/simobject.h"
 #include "../inc/simulation.h"
+#include "../inc/collisions.h"
 
 /* ---------------------------------------------------------------------------------------- */
 
@@ -74,15 +75,22 @@ void simulation_init(simulation_t *sim)
     // set field properties
     sim->fieldproperties->timestep = 0.25f;
     
-    sim->fieldproperties->xvel_constant =  0.01f;
+    sim->fieldproperties->xvel_constant =  0.1f;
     sim->fieldproperties->yvel_constant =  0.0f;
     sim->fieldproperties->xacc_constant =  0.0f;
-    sim->fieldproperties->yacc_constant =  0.01f;
+    sim->fieldproperties->yacc_constant =  -0.1f;
 
-    sim->fieldproperties->positive_x_boundary = (float)((sim->properties->windowPos_x) + (sim->properties->windowLength * 0.9f));
-    sim->fieldproperties->negative_x_boundary = (float)((sim->properties->windowPos_x) + (sim->properties->windowLength * 0.1f));
-    sim->fieldproperties->positive_y_boundary = (float)((sim->properties->windowPos_y) + (sim->properties->windowHeight * 0.1f));
-    sim->fieldproperties->negative_y_boundary = (float)((sim->properties->windowPos_y) + (sim->properties->windowHeight * 0.9f));
+    sim->fieldproperties->positive_x_boundary = (float)((sim->properties->windowPos_x) + (sim->properties->windowLength * 0.82f));
+    sim->fieldproperties->negative_x_boundary = (float)((sim->properties->windowPos_x) + (sim->properties->windowLength * 0.18f));
+    sim->fieldproperties->positive_y_boundary = (float)((sim->properties->windowPos_y) + (sim->properties->windowHeight * 0.18f));
+    sim->fieldproperties->negative_y_boundary = (float)((sim->properties->windowPos_y) + (sim->properties->windowHeight * 0.82f));
+
+    sim->fieldproperties->max_x_pos = 10000.0f;
+    sim->fieldproperties->max_y_pos = 10000.0f;
+    sim->fieldproperties->max_x_vel = 1000.0f;
+    sim->fieldproperties->max_y_vel = 1000.0f;
+    sim->fieldproperties->max_x_vel = 1000.0f;
+    sim->fieldproperties->max_y_vel = 1000.0f;
 
     //^
     printf("positive x boundary = %f\n", sim->fieldproperties->positive_x_boundary);
@@ -96,9 +104,9 @@ void simulation_init(simulation_t *sim)
     simulation_init_border(sim);
 
     //! add an object to the simulation
-    sim->objects[0] = createObject(50, 0, 0, 0, 0, 0, 0, 0.1, 0, 0, 0.1);
-    sim->objects[1] = createObject(150, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
-    sim->objects[2] = createObject(35, 0, 0, 0, 0, 0, 0, -0.5, 0, 0, -0.01);
+    sim->objects[0] = createObject(50, 0, 0, 0, 0, 0, 0, 0.1, 0, 0, 0.15);
+    sim->objects[1] = createObject(150, 0, 0, 0, 0, 0, 0, 0.2, 0, 0, -0.2);
+    sim->objects[2] = createObject(35, 0, 0, 0, 0, 0, 0, -0.1, 0, 0, -0.1);
 
 }
 
@@ -135,6 +143,8 @@ void simulation_start(simulation_t *sim)
 void simulation_kill(simulation_t *sim)
 {
 
+    uint16_t i = 0;
+
     if (sim->sdl->window)   SDL_DestroyWindow(sim->sdl->window);
     if (sim->sdl->renderer) SDL_DestroyRenderer(sim->sdl->renderer);
     if (sim->sdl->texture)  SDL_DestroyTexture(sim->sdl->texture);
@@ -143,7 +153,11 @@ void simulation_kill(simulation_t *sim)
     free(sim->properties);
     free(sim->userinteractions);
     free(sim->fieldproperties);
-    free(sim->objects);
+    
+    for (i = 0; i < SIMULATION_NUM_OBJECTS; i++)
+    {
+        free(sim->objects[i]);
+    }
     
     free(sim);
 
@@ -154,15 +168,15 @@ void simulation_kill(simulation_t *sim)
 //! /* ---------------------------------------------------------------------------------------- */  //!
 
 // detects which objects have interecting locations ( naive O(N^2) )
-static uint8_t* simulation_check_collisions(simulation_t *sim, simobject_t *obj[SIMULATION_NUM_OBJECTS])
+static uint8_t* simulation_check_collisions(simulation_t *sim, simobject_t* obj[SIMULATION_NUM_OBJECTS])
 {
 
     //* TODO: something weird happening with the first object's collision detection
 
     uint8_t collision_matrix[SIMULATION_NUM_OBJECTS][SIMULATION_NUM_OBJECTS] = {0};
     uint8_t *collision_matrix_unwrapped;
-    uint8_t i, j;
-    uint8_t nrows, ncols;
+    uint16_t i, j, k;
+    uint16_t nrows, ncols;
     simobject_t obj1, obj2;
     SDL_FRect rect1, rect2, border, sect;                                               // assuming the objects are all rectangles for now
     float window_x_origin, window_y_origin;
@@ -182,26 +196,20 @@ static uint8_t* simulation_check_collisions(simulation_t *sim, simobject_t *obj[
     // detect collisions with border
     for (i = 0; i < nrows; i++)
     {
+
         obj1 = *obj[i];
 
         // convert object's x-y coordinates to window coordinates
         rect1.x = window_x_origin + obj1.x_pos;
-        rect1.y = window_y_origin - obj1.y_pos; 
+        rect1.y = window_y_origin + obj1.y_pos; 
         rect1.w = obj1.width;
         rect1.h = obj1.height;
 
-        if (SDL_IntersectFRect(&rect1, &border, &sect))
-        {
-            // if the intersection of the object and the border is not equal to the object (the object is intersecting or outside the border)
-            if (rect1.h != sect.h || rect1.w != sect.w || rect1.x != sect.x || rect1.y != sect.y)
-            {
-               collision_matrix[i][i] = 1;              // no this isn't a typo
-            }
-            else
-            {
-                collision_matrix[i][i] = 0;
-            }
-        }
+        //^
+        printf("rect1: (%f) (%f) (%f) (%f)\n", rect1.x, rect1.y, rect1.w, rect1.h);
+        //^
+
+        collision_matrix[i][i] = detect_border_collision(rect1, border);
 
     }
 
@@ -220,6 +228,8 @@ static uint8_t* simulation_check_collisions(simulation_t *sim, simobject_t *obj[
         for (j = 0; j < ncols; j++)
         {
 
+            if (i == j) continue;
+
             obj2 = *obj[j];
 
             // convert object's x-y coordinates to window coordinates
@@ -228,15 +238,25 @@ static uint8_t* simulation_check_collisions(simulation_t *sim, simobject_t *obj[
             rect2.w = obj2.width;
             rect2.h = obj2.height;
 
-            // if the rectangles intersect, mark the collision in the matrix
-            if (SDL_IntersectFRect(&rect1, &rect2, &sect))
-            {
-                collision_matrix[i][j] = 1;
-            }
+            collision_matrix[i][j] = (uint8_t)detect_object_collision(rect1, rect2);
 
         }
 
     }
+
+    //^ print collision matrix
+    printf("----------\n");
+    for (i = 0; i < nrows; i++)
+    {
+        printf("|");
+        for (j = 0; j < ncols; j++)
+        {
+            printf("%d|", collision_matrix[i][j]);
+        }
+        printf("\n");
+    }
+    printf("----------\n");
+    //^
 
     // unwrap array into 1D (index = indexX * arrayWidth + indexY)
     for (i = 0; i < nrows; i++)
@@ -246,6 +266,8 @@ static uint8_t* simulation_check_collisions(simulation_t *sim, simobject_t *obj[
             collision_matrix_unwrapped[i * ncols * j] = collision_matrix[i][j];
         }
     }
+
+
 
     return collision_matrix_unwrapped;
 
@@ -262,7 +284,7 @@ static void simulation_handle_collisions(simobject_t *obj[SIMULATION_NUM_OBJECTS
     nrows = SIMULATION_NUM_OBJECTS;
     ncols = SIMULATION_NUM_OBJECTS;
 
-    // unwrap collision matrix, free the previously-malloc'd memory
+    // unwrap collision matrix
     for (i = 0; i < nrows; i++)
     {
         for (j = 0; j < ncols; j++)
@@ -271,7 +293,8 @@ static void simulation_handle_collisions(simobject_t *obj[SIMULATION_NUM_OBJECTS
         }
     }
 
-    // every collision is just a simple harmonic oscillator... sshhh!
+    //^ print collision matrix
+    /*
     printf("----------\n");
     for (i = 0; i < nrows; i++)
     {
@@ -283,6 +306,11 @@ static void simulation_handle_collisions(simobject_t *obj[SIMULATION_NUM_OBJECTS
         printf("\n");
     }
     printf("----------\n");
+    */
+    //^
+
+    // every collision is just a simple harmonic oscillator... sshhh!
+
 
     free(collision_matrix_unwrapped);
     
@@ -319,6 +347,7 @@ static void simulation_init_border(simulation_t *sim)
 
     SDL_SetRenderDrawColor(sim->sdl->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderDrawRectF(sim->sdl->renderer, &border);
+    SDL_RenderFillRectF(sim->sdl->renderer, &border);
     SDL_RenderPresent(sim->sdl->renderer);
 
     sim->properties->border = border;
@@ -363,7 +392,7 @@ static void simulation_render_objects(simulation_t *sim)
 
         // convert object's x-y coordinates to window coordinates
         float window_x_pos = window_x_origin + obj.x_pos;
-        float window_y_pos = window_y_origin - obj.y_pos;
+        float window_y_pos = window_y_origin + obj.y_pos;
 
         // create rectangle from the object's current state
         SDL_FRect rect = { window_x_pos, window_y_pos, obj.height, obj.width };
@@ -471,6 +500,7 @@ static void sdl_redraw_border(simulation_t *sim)
 
     SDL_SetRenderDrawColor(sim->sdl->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderDrawRectF(sim->sdl->renderer, &sim->properties->border);
+    SDL_RenderFillRectF(sim->sdl->renderer, &sim->properties->border);
 
 }
 

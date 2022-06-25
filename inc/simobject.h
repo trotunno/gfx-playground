@@ -30,6 +30,13 @@ typedef struct fieldproperties_t
     float positive_y_boundary;
     float negative_y_boundary;
 
+    float max_x_pos;
+    float max_y_pos;
+    float max_x_vel;
+    float max_y_vel;
+    float max_x_acc;
+    float max_y_acc;
+
 } fieldproperties_t;
 
 // manages an object in the simulation

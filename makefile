@@ -11,10 +11,10 @@ LFLAGS=-lm -LC:/msys64/mingw64/lib -lSDL2
 INCLUDE=-I/inc -IC:/msys64/mingw64/include/SDL2
 
 # source files
-CFILES= src/common.c src/simobject.c src/simulation.c src/eventhandler.c src/main.c 
+CFILES= src/common.c src/simobject.c src/simulation.c src/eventhandler.c src/collisions.c src/main.c 
 
 # header files
-HFILES=inc/common.h inc/simobject.h inc/userinteractions.h inc/simulation.h inc/eventhandler.h inc/main.h
+HFILES=inc/common.h inc/simobject.h inc/userinteractions.h inc/simulation.h inc/eventhandler.h inc/collisions.h inc/main.h
 
 # build directory 
 BUILD=builds

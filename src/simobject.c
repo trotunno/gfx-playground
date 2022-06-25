@@ -7,6 +7,7 @@
 
 /* ---------------------------------------------------------------------------------------- */
 
+#include <stdio.h>
 #include <float.h>
 #include <math.h>
 
@@ -23,7 +24,7 @@ static void simobject_update_position(simobject_t *obj, fieldproperties_t props)
 
 /* ---------------------------------------------------------------------------------------- */
 
-//* TODO: make these function arguments variadic, default values all == 0
+//* TODO: make these function arguments variadic, default values all == 0. Supplying all these for an object is goofy
 simobject_t * createObject
 (
     float mass, float x_pos, float y_pos, float x_vel, float y_vel, float x_acc, float y_acc,
@@ -81,6 +82,12 @@ static void simobject_update_acceleration(simobject_t *obj, fieldproperties_t pr
     }
     #endif
 
+    // bounding
+    if (obj->x_vel >  props.max_x_acc) obj->x_vel =  props.max_x_acc;
+    if (obj->x_vel < -props.max_x_acc) obj->x_vel = -props.max_x_acc;
+    if (obj->y_vel >  props.max_y_acc) obj->y_vel =  props.max_y_acc;
+    if (obj->y_vel < -props.max_y_acc) obj->y_vel = -props.max_y_acc;
+
 }
 
 static void simobject_update_velocity(simobject_t *obj, fieldproperties_t props)
@@ -95,6 +102,12 @@ static void simobject_update_velocity(simobject_t *obj, fieldproperties_t props)
         obj->y_vel += props.yvel_constant + ((obj->y_acc * dt) + (obj->intr_y_acc * dt));
     }
     #endif
+
+    // bounding
+    if (obj->x_vel >  props.max_x_vel) obj->x_vel =  props.max_x_vel;
+    if (obj->x_vel < -props.max_x_vel) obj->x_vel = -props.max_x_vel;
+    if (obj->y_vel >  props.max_y_vel) obj->y_vel =  props.max_y_vel;
+    if (obj->y_vel < -props.max_y_vel) obj->y_vel = -props.max_y_vel;
 
 }
 
@@ -124,6 +137,12 @@ static void simobject_update_position(simobject_t *obj, fieldproperties_t props)
         obj->y_pos += (obj->y_vel * dt) + ( 0.5f * (obj->y_acc * dt) );
     }
     #endif
+
+    // bounding
+    if (obj->x_pos >  props.max_x_pos) obj->x_pos =  props.max_x_pos;
+    if (obj->x_pos < -props.max_x_pos) obj->x_pos = -props.max_x_pos;
+    if (obj->y_pos >  props.max_y_pos) obj->y_pos =  props.max_y_pos;
+    if (obj->y_pos < -props.max_y_pos) obj->y_pos = -props.max_y_pos;
 
 }
 
