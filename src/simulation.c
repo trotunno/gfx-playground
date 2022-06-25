@@ -175,6 +175,7 @@ static uint8_t* simulation_check_collisions(simulation_t *sim, simobject_t* obj[
 
     uint8_t collision_matrix[SIMULATION_NUM_OBJECTS][SIMULATION_NUM_OBJECTS] = {0};
     uint8_t *collision_matrix_unwrapped;
+    uint16_t row_index, col_index;
     uint16_t i, j, k;
     uint16_t nrows, ncols;
     simobject_t obj1, obj2;
@@ -244,26 +245,12 @@ static uint8_t* simulation_check_collisions(simulation_t *sim, simobject_t* obj[
 
     }
 
-    //^ print collision matrix
-    printf("----------\n");
-    for (i = 0; i < nrows; i++)
+    // unwrap array into 1D
+    for (i = 0, col_index = 0; col_index < ncols; col_index++)
     {
-        printf("|");
-        for (j = 0; j < ncols; j++)
+        for (row_index = 0; row_index < nrows; row_index++, i++)
         {
-            printf("%d|", collision_matrix[i][j]);
-        }
-        printf("\n");
-    }
-    printf("----------\n");
-    //^
-
-    // unwrap array into 1D (index = indexX * arrayWidth + indexY)
-    for (i = 0; i < nrows; i++)
-    {
-        for (j = 0; j < ncols; j++)
-        {
-            collision_matrix_unwrapped[i * ncols * j] = collision_matrix[i][j];
+            collision_matrix_unwrapped[i] = collision_matrix[row_index][col_index];
         }
     }
 
@@ -280,21 +267,22 @@ static void simulation_handle_collisions(simobject_t *obj[SIMULATION_NUM_OBJECTS
     uint8_t i, j;
     uint8_t collision_matrix[SIMULATION_NUM_OBJECTS][SIMULATION_NUM_OBJECTS] = {0};
     uint8_t nrows, ncols;
+    uint16_t row_index, col_index;
 
     nrows = SIMULATION_NUM_OBJECTS;
     ncols = SIMULATION_NUM_OBJECTS;
 
-    // unwrap collision matrix
-    for (i = 0; i < nrows; i++)
+    // unwrap collision matrix to 2D
+    for (i = 0, col_index = 0; col_index < ncols; col_index++)
     {
-        for (j = 0; j < ncols; j++)
+        for (row_index = 0; row_index < nrows; row_index++, i++)
         {
-            collision_matrix[i][j] = collision_matrix_unwrapped[i * ncols * j];
+            collision_matrix[row_index][col_index] = collision_matrix_unwrapped[i];
         }
     }
 
     //^ print collision matrix
-    /*
+    
     printf("----------\n");
     for (i = 0; i < nrows; i++)
     {
@@ -306,7 +294,7 @@ static void simulation_handle_collisions(simobject_t *obj[SIMULATION_NUM_OBJECTS
         printf("\n");
     }
     printf("----------\n");
-    */
+    
     //^
 
     // every collision is just a simple harmonic oscillator... sshhh!
