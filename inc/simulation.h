@@ -15,8 +15,8 @@
 #define WINDOW_WIDTH 1152
 #define WINDOW_HEIGHT 648
 
-#define SIMULATION_FPS 240
-#define SIMULATION_NUM_OBJECTS 6
+#define SIMULATION_FPS 500
+#define SIMULATION_NUM_OBJECTS 20
 #define SIMULATION_CONSTANT_ACCELERATION 1
 #define SIMULATION_PERFECTLY_ELASTIC 1
 
@@ -32,7 +32,7 @@
 typedef struct simproperties_t
 {
     bool                running;                                // simulation on/off
-    uint8_t             fps;                                    // how many times the simulation is updated per second
+    uint16_t            fps;                                    // how many times the simulation is updated per second
 
     int32_t             windowHeight;                           // the window's height in screen coordinates
     int32_t             windowLength;                           // the window's length in screen coordinates

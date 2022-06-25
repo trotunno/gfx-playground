@@ -27,6 +27,7 @@
 
 /* ---------------------------------------------------------------------------------------- */
 
+static void simulation_add_objects(simulation_t *sim);
 static void simulation_render_objects(simulation_t *sim);
 static void simulation_update_object_states(simulation_t *sim);
 static void simulation_init_background(simulation_t *sim);
@@ -75,12 +76,12 @@ void simulation_init(simulation_t *sim)
     sim->userinteractions->escape_pressed = false;
 
     // set field properties
-    sim->fieldproperties->timestep = 0.25f;
+    sim->fieldproperties->timestep = 0.01;
     
-    sim->fieldproperties->xvel_constant =  0.1f;
-    sim->fieldproperties->yvel_constant =  0.0f;
+    sim->fieldproperties->xvel_constant =  0.0f;
+    sim->fieldproperties->yvel_constant =  2.0f;
     sim->fieldproperties->xacc_constant =  0.0f;
-    sim->fieldproperties->yacc_constant =  -0.1f;
+    sim->fieldproperties->yacc_constant =  0.3f;
 
     sim->fieldproperties->positive_x_boundary = (float)((sim->properties->windowPos_x) + (sim->properties->windowLength * 0.82f));
     sim->fieldproperties->negative_x_boundary = (float)((sim->properties->windowPos_x) + (sim->properties->windowLength * 0.18f));
@@ -106,12 +107,7 @@ void simulation_init(simulation_t *sim)
     simulation_init_border(sim);
 
     //! add an object to the simulation
-    sim->objects[0] = createObject(65, -100, -100, 0, 0, 0, 0, 0.1, 0, 0, 0.15);
-    sim->objects[1] = createObject(50, 100, -33, 0, 0, 0, 0, 0.2, 0, 0, -0.2);
-    sim->objects[2] = createObject(55, -200, 0, 0, 0, 0, 0, -0.1, 0, 0, -0.1);
-    sim->objects[3] = createObject(35, 200, 70, 0, 0, 0, 0, 0.13, 0, 0, 0.15);
-    sim->objects[4] = createObject(40, -300, 35, 0, 0, 0, 0, 0.07, 0, 0, -0.2);
-    sim->objects[5] = createObject(60, 300, 0, 0, 0, 0, 0, -0.1, 0, 0, -0.1);
+    simulation_add_objects(sim);
 
 }
 
@@ -172,6 +168,78 @@ void simulation_kill(simulation_t *sim)
 
 //! /* ---------------------------------------------------------------------------------------- */  //!
 
+static void simulation_add_objects(simulation_t *sim)
+{
+
+    float default_mass = 50;
+
+    float min_x_spawn = sim->fieldproperties->negative_x_boundary + 50;
+    float max_x_spawn = sim->fieldproperties->positive_x_boundary - 50;
+    float min_y_spawn = sim->fieldproperties->negative_y_boundary + 50;
+    float max_y_spawn = sim->fieldproperties->positive_y_boundary - 50;
+
+    float x = min_x_spawn;
+    float y = min_y_spawn;
+
+/*
+    for (uint8_t i = 0; i < SIMULATION_NUM_OBJECTS; i++)
+    {
+        sim->objects[i] = createObject
+        (
+            default_mass,                           // mass
+            x,                                      // x pos initial
+            y,                                      // y pos initial
+            0,                                      // x vel initial
+            0,                                      // y vel initial
+            0,                                      // x acc initial
+            0,                                      // y acc initial
+            (rand() % 2) - 1,                       // x vel intrinsic
+            (rand() % 2) - 1,                       // y vel intrinsic
+            0,                                      // x acc intrinsic
+            0                                       // y acc intrinsic
+        );
+
+        // make sure they don't overlap (not robust at all)  
+        if (x + ( (default_mass/2) + 2 ) >= max_x_spawn)
+        {
+            x = min_x_spawn;
+            y = min_y_spawn + ( (default_mass/2) + 2 );
+        }
+        else
+        {
+            x += ( (default_mass/2) + 2 );
+            y += ( (default_mass/2) + 2 );
+        }
+        
+    }
+*/
+
+
+    sim->objects[0] = createObject(30, -100, -100, 0, 0, 0, 0, 5.0, 3.0, 0, 0);
+    sim->objects[1] = createObject(24, -100, -33, 0, 0, 0, 0, -5.0, 3.0, 0, 0);
+    sim->objects[2] = createObject(30, -150, 0, 0, 0, 0, 0, 5.0, -3.0, 0, 0);
+    sim->objects[3] = createObject(40, 200, 120, 0, 0, 0, 0, 5.0, -3.0, 0, 0);
+    sim->objects[4] = createObject(32, -210, -120, 0, 0, 0, 0, 5.0, 3.0, 0, 0);
+    sim->objects[5] = createObject(35, -84, 30, 0, 0, 0, 0, -5.0, -3.0, 0, 0);
+    sim->objects[6] = createObject(38, 200, -183, 0, 0, 0, 0, 5.0, 3.0, 0, 0);
+    sim->objects[7] = createObject(39, -215, -33, 0, 0, 0, 0, -5.0, 3.0, 0, 0);
+    sim->objects[8] = createObject(29, -120, 121, 0, 0, 0, 0, -5.0, -3.0, 0, 0);
+    sim->objects[9] = createObject(28, 200, 84, 235, 0, 0, 0, 5.0, -3.0, 0, 0);
+
+    sim->objects[10] = createObject(30, -rand() % 200, -rand() % 200, 0, 0, 0, 0, 5.0, 3.0, 0, 0);
+    sim->objects[11] = createObject(24, -rand() % 200, -rand() % 200, 0, 0, 0, 0, -5.0, 3.0, 0, 0);
+    sim->objects[12] = createObject(30, -rand() % 200,  rand() % 200, 0, 0, 0, 0, 5.0, -3.0, 0, 0);
+    sim->objects[13] = createObject(40,  rand() % 200, -rand() % 200, 0, 0, 0, 0, 5.0, -3.0, 0, 0);
+    sim->objects[14] = createObject(32,  rand() % 200, -rand() % 200, 0, 0, 0, 0, 5.0, 3.0, 0, 0);
+    sim->objects[15] = createObject(35,  rand() % 200,  rand() % 200, 0, 0, 0, 0, -5.0, -3.0, 0, 0);
+    sim->objects[16] = createObject(38, -rand() % 200, -rand() % 200, 0, 0, 0, 0, 5.0, 3.0, 0, 0);
+    sim->objects[17] = createObject(39, -rand() % 200,  rand() % 200, 0, 0, 0, 0, -5.0, 3.0, 0, 0);
+    sim->objects[18] = createObject(29,  rand() % 200, -rand() % 200, 0, 0, 0, 0, -5.0, -3.0, 0, 0);
+    sim->objects[19] = createObject(28, -rand() % 200,  rand() % 200, 0, 0, 0, 0, 5.0, -3.0, 0, 0);
+
+
+}
+
 // detects which objects have interecting locations (O(N^2))
 // treats objects as rectangles (as they are drawn currently)
 static uint8_t* simulation_check_collisions(simulation_t *sim, simobject_t* obj[SIMULATION_NUM_OBJECTS])
@@ -211,7 +279,7 @@ static uint8_t* simulation_check_collisions(simulation_t *sim, simobject_t* obj[
         rect1.h = obj1.height;
 
         //^
-        printf("rect1: (%f) (%f)\n", rect1.x, rect1.y);
+        //printf("rect1: (%f) (%f)\n", rect1.x, rect1.y);
         //^
 
         collision_matrix[i][i] = detect_border_collision(rect1, border);
@@ -284,6 +352,7 @@ static void simulation_handle_collisions(simobject_t *obj[SIMULATION_NUM_OBJECTS
     }
 
     //^ print collision matrix
+    /*
     printf("----------\n");
     for (i = 0; i < nrows; i++)
     {
@@ -295,20 +364,39 @@ static void simulation_handle_collisions(simobject_t *obj[SIMULATION_NUM_OBJECTS
         printf("\n");
     }
     printf("----------\n");
+    */
     //^
-/*
+
     // every collision is just a simple harmonic oscillator... sshhh!
     for (i = 0, obj_index = 0; i < nrows; i++, obj_index++)
     {
         for (j = 0; j < ncols; j++)
         {
+
             if (collision_matrix[i][j])
             {
-                *obj[obj_index]->momentum += 
+
+                // if it's a border collision
+                if (i == j)
+                {
+                    // make a dummy object
+                    simobject_t border = { .x_vel = obj[i]->x_vel, .y_vel = obj[i]->y_vel };
+                    simobject_collision(obj[i], &border, props);
+                }
+
+                // if it's an object collision
+                else
+                {
+                    simobject_collision(obj[i], obj[j], props);
+                }
+
+                // don't re-calculate the collision
+                collision_matrix[j][i] = 0;
+
             }
         }
     }
-*/
+
     free(collision_matrix_unwrapped);
     
 }
@@ -344,7 +432,7 @@ static void simulation_init_border(simulation_t *sim)
 
     SDL_SetRenderDrawColor(sim->sdl->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderDrawRectF(sim->sdl->renderer, &border);
-    SDL_RenderFillRectF(sim->sdl->renderer, &border);
+    //SDL_RenderFillRectF(sim->sdl->renderer, &border);
     SDL_RenderPresent(sim->sdl->renderer);
 
     sim->properties->border = border;
@@ -493,7 +581,7 @@ static void sdl_redraw_border(simulation_t *sim)
 
     SDL_SetRenderDrawColor(sim->sdl->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderDrawRectF(sim->sdl->renderer, &sim->properties->border);
-    SDL_RenderFillRectF(sim->sdl->renderer, &sim->properties->border);
+    //SDL_RenderFillRectF(sim->sdl->renderer, &sim->properties->border);
 
 }
 

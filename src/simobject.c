@@ -74,7 +74,20 @@ void simobject_update_state(simobject_t *obj, fieldproperties_t props)
 
 }
 
-float simobject_collision(simobject_t *obj1, simobject_t *obj2, fieldproperties_t props);
+void simobject_collision(simobject_t *obj1, simobject_t *obj2, fieldproperties_t props)
+{
+
+    #if (SIMULATION_PERFECTLY_ELASTIC)
+    {
+        obj1->x_vel += -obj1->x_vel*2.0f;
+        obj1->y_vel += -obj1->y_vel*2.0f;
+
+        obj2->x_vel += -obj2->x_vel*2.0f;
+        obj2->y_vel += -obj2->y_vel*2.0f;
+    }
+    #endif
+
+}
 
 /* ---------------------------------------------------------------------------------------- */
 
