@@ -51,6 +51,10 @@ simobject_t * createObject
     obj->intr_x_acc = intr_x_acc;
     obj->intr_y_acc = intr_y_acc;
 
+    obj->color_r = rand() % 255;
+    obj->color_g = rand() % 255;
+    obj->color_b = rand() % 255;
+
     return obj;
 
 }
@@ -69,6 +73,8 @@ void simobject_update_state(simobject_t *obj, fieldproperties_t props)
     simobject_update_position(obj, props);
 
 }
+
+float simobject_collision(simobject_t *obj1, simobject_t *obj2, fieldproperties_t props);
 
 /* ---------------------------------------------------------------------------------------- */
 

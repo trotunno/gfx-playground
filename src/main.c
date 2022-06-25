@@ -27,29 +27,17 @@ int main(int argc, char **argv)
 
     simulation_t *simulation;
 
+    simulation = malloc(sizeof(simulation_t));
 
-    while(1)
-    {
+    printf("initializing...\n");
+    simulation_init(simulation);
 
-        simulation = malloc(sizeof(simulation_t));
+    printf("starting sim...\n");
+    simulation_start(simulation);
 
-        printf("initializing...\n");
-        simulation_init(simulation);
-
-        printf("starting sim...\n");
-        simulation_start(simulation);
-
-        //* TODO: stop this from making me lose focus on my console window
-        printf("killing sim...\n");
-        simulation_kill(simulation);
- 
-        for (uint8_t i = 3; i >= 1; i--)
-        {
-            printf("restarting in %d...\n", i);
-            sdelay(1);
-        }
-
-    }
+    //* TODO: stop this from making me lose focus on my console window
+    printf("killing sim...\n");
+    simulation_kill(simulation);
 
     return 0;
 

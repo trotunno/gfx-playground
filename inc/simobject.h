@@ -43,6 +43,8 @@ typedef struct fieldproperties_t
 typedef struct simobject_t
 {
 
+    uint8_t color_r, color_g, color_b;
+
     float mass;
 
     float width;
