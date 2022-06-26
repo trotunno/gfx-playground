@@ -22,7 +22,6 @@ void evt_sdl_keydown_handler(SDL_Event *event, simulation_t *sim)
 
     switch (event->key.keysym.scancode)
     {
-
         case SDL_SCANCODE_SPACE:
             sim->userinteractions->space_pressed = true;
             break;
@@ -42,7 +41,6 @@ void evt_sdl_keyup_handler(SDL_Event *event, simulation_t *sim)
 
     switch (event->key.keysym.scancode)
     {
-
         case SDL_SCANCODE_SPACE:
             sim->userinteractions->space_pressed = false;
             break;

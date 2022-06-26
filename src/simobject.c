@@ -17,14 +17,6 @@
 
 /* ---------------------------------------------------------------------------------------- */
 
-typedef struct vector
-{
-    float x;
-    float y;
-} vector;
-
-/* ---------------------------------------------------------------------------------------- */
-
 static void simobject_update_acceleration(simobject_t *obj, fieldproperties_t props);
 static void simobject_update_velocity(simobject_t *obj, fieldproperties_t props);
 static void simobject_update_momentum(simobject_t *obj, fieldproperties_t props);

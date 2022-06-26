@@ -21,6 +21,7 @@
 #include "../inc/SDL2/SDL_video.h"
 
 #include "../inc/common.h"
+#include "../inc/shapes.h"
 #include "../inc/eventhandler.h"
 #include "../inc/simobject.h"
 #include "../inc/simulation.h"
@@ -79,7 +80,7 @@ void simulation_init(simulation_t *sim)
     // set field properties
     sim->fieldproperties->timestep = 0.12;
     
-    sim->fieldproperties->xvel_constant =  0.1f;
+    sim->fieldproperties->xvel_constant =  0.0f;
     sim->fieldproperties->yvel_constant =  0.0f;
     sim->fieldproperties->xacc_constant =  0.0f;
     sim->fieldproperties->yacc_constant =  0.5f;
@@ -215,16 +216,15 @@ static void simulation_add_objects(simulation_t *sim)
     }
 */
 
-    // * there is an issue with the "intrinsic velocity" shit that is causing simulation border problems
-
-    printf("heladsf\n");
+    // * there is an issue with the "intrinsic velocity" that is causing simulation border problems
 
     sim->objects[0] = createObject(30, 300, -100, 0, 0, 0, 0, 0, 0, 0, 0);
+    
+    /*
     sim->objects[1] = createObject(24, -100, -33, 0, 0, 0, 0, 0, 0, 0, 0);
     sim->objects[2] = createObject(30, -150, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     sim->objects[3] = createObject(40, 200, 120, 0, 0, 0, 0, 0, 0, 0, 0);
     sim->objects[4] = createObject(32, -210, -120, 0, 0, 0, 0, 0, 0, 0, 0);
-    
     
     sim->objects[5] = createObject(35, -84, 30, 0, 0, 0, 0, 0, 0, 0, 0);
     sim->objects[6] = createObject(38, 200, -183, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -232,27 +232,22 @@ static void simulation_add_objects(simulation_t *sim)
     sim->objects[8] = createObject(29, -120, 121, 0, 0, 0, 0, 0, 0, 0, 0);
     sim->objects[9] = createObject(28, 200, 84, 235, 0, 0, 0, 0, 0, 0, 0);
     
-
-    
     sim->objects[10] = createObject(30, -rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
     sim->objects[11] = createObject(24, -rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
     sim->objects[12] = createObject(30, -rand() % 200,  rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
     sim->objects[13] = createObject(40,  rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
     sim->objects[14] = createObject(32,  rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
-    
 
-    
     sim->objects[15] = createObject(35,  rand() % 200,  rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
     sim->objects[16] = createObject(38, -rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
     sim->objects[17] = createObject(39, -rand() % 200,  rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
     sim->objects[18] = createObject(29,  rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
     sim->objects[19] = createObject(28, -rand() % 200,  rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
-    
+    */
 
 }
 
-// detects which objects have interecting locations (O(N^2))
-// treats objects as rectangles (as they are drawn currently)
+// detects which objects have interecting locations (O(N^2)). Treats objects as rectangles
 static uint8_t* simulation_check_collisions(simulation_t *sim, simobject_t* obj[SIMULATION_NUM_OBJECTS])
 {
 
@@ -366,7 +361,6 @@ static void simulation_handle_collisions(simobject_t *obj[SIMULATION_NUM_OBJECTS
     }
 
     //^ print collision matrix
-    
     printf("----------\n");
     for (i = 0; i < nrows; i++)
     {
@@ -378,7 +372,6 @@ static void simulation_handle_collisions(simobject_t *obj[SIMULATION_NUM_OBJECTS
         printf("\n");
     }
     printf("=----------\n");
-
     //^
 
     // every collision is just a simple harmonic oscillator... sshhh!
@@ -409,7 +402,7 @@ static void simulation_handle_collisions(simobject_t *obj[SIMULATION_NUM_OBJECTS
                     simobject_collision(obj[i], &border, collision_matrix[i][j], props);
 
                     //^
-                    printf("object x,y velocity after collisio = %f,%f\n", obj[i]->x_vel, obj[i]->y_vel);
+                    printf("object x,y velocity after collision = %f,%f\n", obj[i]->x_vel, obj[i]->y_vel);
                     //^
 
                     last_collision_matrix[i][j] = num_ignore_frames;
@@ -465,7 +458,6 @@ static void simulation_init_border(simulation_t *sim)
 
     SDL_SetRenderDrawColor(sim->sdl->renderer, 0xFF, 0xFF, 0xFF, 0xFF);
     SDL_RenderDrawRectF(sim->sdl->renderer, &border);
-    //SDL_RenderFillRectF(sim->sdl->renderer, &border);
     SDL_RenderPresent(sim->sdl->renderer);
 
     sim->properties->border = border;
@@ -493,6 +485,8 @@ static void simulation_update_object_states(simulation_t *sim)
 // renders each object as a rectangle and draws them to the screen
 static void simulation_render_objects(simulation_t *sim)
 {
+
+    shapes_render_circle(sim);
 
     simobject_t obj;
 
@@ -595,6 +589,7 @@ static void sdl_process_events(simulation_t *sim)
                 
             default:
                 break;
+
         }
     }
 

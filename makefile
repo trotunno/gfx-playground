@@ -8,13 +8,19 @@ CFLAGS=-g -O0 -std=c11 -Werror
 LFLAGS=-lm -LC:/msys64/mingw64/lib -lSDL2
 
 # include paths
-INCLUDE=-I/inc -IC:/msys64/mingw64/include/SDL2
+INCLUDE=-I/inc -IC:/msys64/mingw64/include/SDL2 -I/inc/sdl2_gfx
 
-# source files
-CFILES= src/common.c src/simobject.c src/simulation.c src/eventhandler.c src/collisions.c src/main.c 
+# library header files
+LHFILES=inc/gfx-primitives/primitives.h
 
 # header files
-HFILES=inc/common.h inc/simobject.h inc/userinteractions.h inc/simulation.h inc/eventhandler.h inc/collisions.h inc/main.h
+HFILES=inc/common.h inc/shapes.h inc/simobject.h inc/userinteractions.h inc/simulation.h inc/eventhandler.h inc/collisions.h inc/main.h
+
+# library source files
+LCFILES=inc/gfx-primitives/primitives.c
+
+# source files
+CFILES= src/common.c src/shapes.c src/simobject.c src/simulation.c src/eventhandler.c src/collisions.c src/main.c 
 
 # build directory 
 BUILD=builds
@@ -23,7 +29,7 @@ BUILD=builds
 BINARY=$(BUILD)/gfx-playground.exe
 
 # file descriptor that allows for output to be piped into oblivion, never to be seen again
-#FD=</dev/null >/dev/null 2>&1 &
+FD=</dev/null >/dev/null 2>&1 &
 
 # default build target
 all: gfx-playground
@@ -34,7 +40,7 @@ fresh: clrscrn clean newline gfx-playground newline run
 # builds the exe, stderr goes to terminal
 gfx-playground: $(CFILES)
 	@echo "Building..."
-	@$(CC) $(BINARY) $(HFILES) $(CFILES) $(CFLAGS) $(LFLAGS) $(INCLUDE)
+	@$(CC) $(BINARY) $(LHFILES) $(HFILES) $(LCFILES) $(CFILES) $(CFLAGS) $(LFLAGS) $(INCLUDE)
 	@if [ !? == 0 ]; then echo -n "Build Failed!"; else echo -n "Build Successful!"; fi
 
 # deletes the target exe + any other files that can be re-generated
