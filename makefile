@@ -17,7 +17,7 @@ LHFILES=inc/gfx-primitives/primitives.h
 HFILES=inc/common.h inc/shapes.h inc/simobject.h inc/userinteractions.h inc/simulation.h inc/eventhandler.h inc/collisions.h inc/main.h
 
 # library source files
-LCFILES=inc/gfx-primitives/primitives.c
+LCFILES=inc/gfx-primitives/primitives.c SDL2.dll
 
 # source files
 CFILES= src/common.c src/shapes.c src/simobject.c src/simulation.c src/eventhandler.c src/collisions.c src/main.c 
