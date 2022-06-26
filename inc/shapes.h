@@ -23,7 +23,7 @@ typedef struct
 
 /* ---------------------------------------------------------------------------------------- */
 
-void shapes_render_circle(simulation_t *sim);
+uint8_t shapes_render_circle(simulation_t *sim, simobject_t *obj);
 
 /* ---------------------------------------------------------------------------------------- */
 

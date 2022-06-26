@@ -80,7 +80,7 @@ void simulation_init(simulation_t *sim)
     // set field properties
     sim->fieldproperties->timestep = 0.12;
     
-    sim->fieldproperties->xvel_constant =  0.0f;
+    sim->fieldproperties->xvel_constant =  0.1f;
     sim->fieldproperties->yvel_constant =  0.0f;
     sim->fieldproperties->xacc_constant =  0.0f;
     sim->fieldproperties->yacc_constant =  0.5f;
@@ -117,6 +117,8 @@ void simulation_init(simulation_t *sim)
 void simulation_start(simulation_t *sim)
 {
 
+    static uint32_t counter;
+
     while(sim->properties->running)
     {
 
@@ -128,6 +130,17 @@ void simulation_start(simulation_t *sim)
             simulation_update_object_states(sim);       // update state of each object in the simulation
 
             simulation_render_objects(sim);             // update the render
+
+            if (counter > sim->properties->fps * 5)
+            {
+                sim->fieldproperties->yacc_constant = -0.1;
+                sim->fieldproperties->xacc_constant = -0.5;
+                counter = 0;
+            }
+            else
+            {
+                counter++;
+            }
 
             SDL_Delay(1000/sim->properties->fps);       // wait for 1 frame before looping again so we can achieve 60 FPS
 
@@ -218,9 +231,8 @@ static void simulation_add_objects(simulation_t *sim)
 
     // * there is an issue with the "intrinsic velocity" that is causing simulation border problems
 
+/*
     sim->objects[0] = createObject(30, 300, -100, 0, 0, 0, 0, 0, 0, 0, 0);
-    
-    /*
     sim->objects[1] = createObject(24, -100, -33, 0, 0, 0, 0, 0, 0, 0, 0);
     sim->objects[2] = createObject(30, -150, 0, 0, 0, 0, 0, 0, 0, 0, 0);
     sim->objects[3] = createObject(40, 200, 120, 0, 0, 0, 0, 0, 0, 0, 0);
@@ -231,19 +243,19 @@ static void simulation_add_objects(simulation_t *sim)
     sim->objects[7] = createObject(39, -215, -33, 0, 0, 0, 0, 0, 0, 0, 0);
     sim->objects[8] = createObject(29, -120, 121, 0, 0, 0, 0, 0, 0, 0, 0);
     sim->objects[9] = createObject(28, 200, 84, 235, 0, 0, 0, 0, 0, 0, 0);
-    
-    sim->objects[10] = createObject(30, -rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
-    sim->objects[11] = createObject(24, -rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
-    sim->objects[12] = createObject(30, -rand() % 200,  rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
-    sim->objects[13] = createObject(40,  rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
-    sim->objects[14] = createObject(32,  rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
+*/
 
-    sim->objects[15] = createObject(35,  rand() % 200,  rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
-    sim->objects[16] = createObject(38, -rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
-    sim->objects[17] = createObject(39, -rand() % 200,  rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
-    sim->objects[18] = createObject(29,  rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
-    sim->objects[19] = createObject(28, -rand() % 200,  rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
-    */
+    sim->objects[0] = createObject(30, -rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[1] = createObject(24, -rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[2] = createObject(30, -rand() % 200,  rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[3] = createObject(40,  rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[4] = createObject(32,  rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
+
+    sim->objects[5] = createObject(35,  rand() % 200,  rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[6] = createObject(38, -rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[7] = createObject(39, -rand() % 200,  rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[8] = createObject(29,  rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[9] = createObject(28, -rand() % 200,  rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
 
 }
 
@@ -486,13 +498,7 @@ static void simulation_update_object_states(simulation_t *sim)
 static void simulation_render_objects(simulation_t *sim)
 {
 
-    shapes_render_circle(sim);
-
-    simobject_t obj;
-
-    // retrieve the x and y origins in window space
-    float window_x_origin = sim->properties->border.x + (sim->properties->border.w / 2.0f);
-    float window_y_origin = sim->properties->border.y + (sim->properties->border.h / 2.0f);
+    simobject_t cur_obj;
 
     sdl_redraw_background(sim);
     sdl_redraw_border(sim);
@@ -500,29 +506,14 @@ static void simulation_render_objects(simulation_t *sim)
     for (uint32_t i = 0; i < SIMULATION_NUM_OBJECTS; i++)
     {
 
-        obj = *sim->objects[i];                                                  
+        cur_obj = *sim->objects[i];                                                  
 
-        // convert object's x-y coordinates to window coordinates
-        float window_x_pos = window_x_origin + obj.x_pos;
-        float window_y_pos = window_y_origin + obj.y_pos;
-
-        // create rectangle from the object's current state
-        SDL_FRect rect = { window_x_pos, window_y_pos, obj.height, obj.width };
-
-        // set object color
-        if (SDL_SetRenderDrawColor(sim->sdl->renderer, sim->objects[i]->color_r, sim->objects[i]->color_g, sim->objects[i]->color_b, 0xFF))         
+        if (SDL_SetRenderDrawColor(sim->sdl->renderer, cur_obj.color_r, cur_obj.color_g, cur_obj.color_b, 0xFF))         
         {
             sdl_report_error();
         }             
         
-        // draw object
-        if (SDL_RenderDrawRectF(sim->sdl->renderer, &rect))
-        {
-            sdl_report_error();
-        }
-        
-        // color fill
-        if (SDL_RenderFillRectF(sim->sdl->renderer, &rect))
+        if (shapes_render_circle(sim, &cur_obj))
         {
             sdl_report_error();
         }
