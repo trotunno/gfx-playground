@@ -1,1 +1,1 @@
-# gfx-playground
+# sdl-physics-playground
