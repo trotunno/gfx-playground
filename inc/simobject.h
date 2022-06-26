@@ -70,6 +70,6 @@ simobject_t* createObject
     float intr_x_vel, float intr_y_vel, float intr_x_acc, float intr_y_acc
 );
 void simobject_update_state(simobject_t *obj, fieldproperties_t props);
-void simobject_collision(simobject_t *obj1, simobject_t *obj2, fieldproperties_t props);
+void simobject_collision(simobject_t *obj1, simobject_t *obj2, uint8_t collision_type, fieldproperties_t props);
 
 #endif

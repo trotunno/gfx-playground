@@ -11,6 +11,7 @@
 
 /* ---------------------------------------------------------------------------------------- */
 
+#include <time.h>
 #include <float.h>
 #include <stdbool.h>
 
@@ -76,12 +77,12 @@ void simulation_init(simulation_t *sim)
     sim->userinteractions->escape_pressed = false;
 
     // set field properties
-    sim->fieldproperties->timestep = 0.01;
+    sim->fieldproperties->timestep = 0.12;
     
-    sim->fieldproperties->xvel_constant =  0.0f;
-    sim->fieldproperties->yvel_constant =  2.0f;
+    sim->fieldproperties->xvel_constant =  0.1f;
+    sim->fieldproperties->yvel_constant =  0.0f;
     sim->fieldproperties->xacc_constant =  0.0f;
-    sim->fieldproperties->yacc_constant =  0.3f;
+    sim->fieldproperties->yacc_constant =  0.5f;
 
     sim->fieldproperties->positive_x_boundary = (float)((sim->properties->windowPos_x) + (sim->properties->windowLength * 0.82f));
     sim->fieldproperties->negative_x_boundary = (float)((sim->properties->windowPos_x) + (sim->properties->windowLength * 0.18f));
@@ -90,10 +91,10 @@ void simulation_init(simulation_t *sim)
 
     sim->fieldproperties->max_x_pos = 10000.0f;
     sim->fieldproperties->max_y_pos = 10000.0f;
-    sim->fieldproperties->max_x_vel = 1000.0f;
-    sim->fieldproperties->max_y_vel = 1000.0f;
-    sim->fieldproperties->max_x_vel = 1000.0f;
-    sim->fieldproperties->max_y_vel = 1000.0f;
+    sim->fieldproperties->max_x_vel = 20.0f;
+    sim->fieldproperties->max_y_vel = 20.0f;
+    sim->fieldproperties->max_x_acc = 100.0f;
+    sim->fieldproperties->max_y_acc = 100.0f;
 
     //^
     printf("positive x boundary = %f\n", sim->fieldproperties->positive_x_boundary);
@@ -214,29 +215,39 @@ static void simulation_add_objects(simulation_t *sim)
     }
 */
 
+    // * there is an issue with the "intrinsic velocity" shit that is causing simulation border problems
 
-    sim->objects[0] = createObject(30, -100, -100, 0, 0, 0, 0, 5.0, 3.0, 0, 0);
-    sim->objects[1] = createObject(24, -100, -33, 0, 0, 0, 0, -5.0, 3.0, 0, 0);
-    sim->objects[2] = createObject(30, -150, 0, 0, 0, 0, 0, 5.0, -3.0, 0, 0);
-    sim->objects[3] = createObject(40, 200, 120, 0, 0, 0, 0, 5.0, -3.0, 0, 0);
-    sim->objects[4] = createObject(32, -210, -120, 0, 0, 0, 0, 5.0, 3.0, 0, 0);
-    sim->objects[5] = createObject(35, -84, 30, 0, 0, 0, 0, -5.0, -3.0, 0, 0);
-    sim->objects[6] = createObject(38, 200, -183, 0, 0, 0, 0, 5.0, 3.0, 0, 0);
-    sim->objects[7] = createObject(39, -215, -33, 0, 0, 0, 0, -5.0, 3.0, 0, 0);
-    sim->objects[8] = createObject(29, -120, 121, 0, 0, 0, 0, -5.0, -3.0, 0, 0);
-    sim->objects[9] = createObject(28, 200, 84, 235, 0, 0, 0, 5.0, -3.0, 0, 0);
+    printf("heladsf\n");
 
-    sim->objects[10] = createObject(30, -rand() % 200, -rand() % 200, 0, 0, 0, 0, 5.0, 3.0, 0, 0);
-    sim->objects[11] = createObject(24, -rand() % 200, -rand() % 200, 0, 0, 0, 0, -5.0, 3.0, 0, 0);
-    sim->objects[12] = createObject(30, -rand() % 200,  rand() % 200, 0, 0, 0, 0, 5.0, -3.0, 0, 0);
-    sim->objects[13] = createObject(40,  rand() % 200, -rand() % 200, 0, 0, 0, 0, 5.0, -3.0, 0, 0);
-    sim->objects[14] = createObject(32,  rand() % 200, -rand() % 200, 0, 0, 0, 0, 5.0, 3.0, 0, 0);
-    sim->objects[15] = createObject(35,  rand() % 200,  rand() % 200, 0, 0, 0, 0, -5.0, -3.0, 0, 0);
-    sim->objects[16] = createObject(38, -rand() % 200, -rand() % 200, 0, 0, 0, 0, 5.0, 3.0, 0, 0);
-    sim->objects[17] = createObject(39, -rand() % 200,  rand() % 200, 0, 0, 0, 0, -5.0, 3.0, 0, 0);
-    sim->objects[18] = createObject(29,  rand() % 200, -rand() % 200, 0, 0, 0, 0, -5.0, -3.0, 0, 0);
-    sim->objects[19] = createObject(28, -rand() % 200,  rand() % 200, 0, 0, 0, 0, 5.0, -3.0, 0, 0);
+    sim->objects[0] = createObject(30, 300, -100, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[1] = createObject(24, -100, -33, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[2] = createObject(30, -150, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[3] = createObject(40, 200, 120, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[4] = createObject(32, -210, -120, 0, 0, 0, 0, 0, 0, 0, 0);
+    
+    
+    sim->objects[5] = createObject(35, -84, 30, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[6] = createObject(38, 200, -183, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[7] = createObject(39, -215, -33, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[8] = createObject(29, -120, 121, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[9] = createObject(28, 200, 84, 235, 0, 0, 0, 0, 0, 0, 0);
+    
 
+    
+    sim->objects[10] = createObject(30, -rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[11] = createObject(24, -rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[12] = createObject(30, -rand() % 200,  rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[13] = createObject(40,  rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[14] = createObject(32,  rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
+    
+
+    
+    sim->objects[15] = createObject(35,  rand() % 200,  rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[16] = createObject(38, -rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[17] = createObject(39, -rand() % 200,  rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[18] = createObject(29,  rand() % 200, -rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
+    sim->objects[19] = createObject(28, -rand() % 200,  rand() % 200, 0, 0, 0, 0, 0, 0, 0, 0);
+    
 
 }
 
@@ -311,7 +322,7 @@ static uint8_t* simulation_check_collisions(simulation_t *sim, simobject_t* obj[
             rect2.w = obj2.width;
             rect2.h = obj2.height;
 
-            collision_matrix[i][j] = (uint8_t)detect_object_collision(rect1, rect2);
+            collision_matrix[i][j] = detect_object_collision(rect1, rect2);
 
         }
 
@@ -336,8 +347,11 @@ static void simulation_handle_collisions(simobject_t *obj[SIMULATION_NUM_OBJECTS
 
     uint8_t i, j, k;
     uint8_t collision_matrix[SIMULATION_NUM_OBJECTS][SIMULATION_NUM_OBJECTS] = {0};
+    static uint8_t last_collision_matrix[SIMULATION_NUM_OBJECTS][SIMULATION_NUM_OBJECTS];
     uint8_t nrows, ncols;
     uint16_t row_index, col_index, obj_index;
+    uint16_t counter = 0;
+    uint8_t num_ignore_frames = 2;
 
     nrows = SIMULATION_NUM_OBJECTS;
     ncols = SIMULATION_NUM_OBJECTS;
@@ -352,7 +366,7 @@ static void simulation_handle_collisions(simobject_t *obj[SIMULATION_NUM_OBJECTS
     }
 
     //^ print collision matrix
-    /*
+    
     printf("----------\n");
     for (i = 0; i < nrows; i++)
     {
@@ -363,8 +377,8 @@ static void simulation_handle_collisions(simobject_t *obj[SIMULATION_NUM_OBJECTS
         }
         printf("\n");
     }
-    printf("----------\n");
-    */
+    printf("=----------\n");
+
     //^
 
     // every collision is just a simple harmonic oscillator... sshhh!
@@ -373,21 +387,40 @@ static void simulation_handle_collisions(simobject_t *obj[SIMULATION_NUM_OBJECTS
         for (j = 0; j < ncols; j++)
         {
 
+            // if there's a collision between obj[i] and obj[j]
             if (collision_matrix[i][j])
             {
+
+                // if these objects very recently collided, ignore it
+                if (last_collision_matrix[i][j] != 0)
+                {
+                    last_collision_matrix[i][j]--;
+                    continue;
+                }
 
                 // if it's a border collision
                 if (i == j)
                 {
-                    // make a dummy object
-                    simobject_t border = { .x_vel = obj[i]->x_vel, .y_vel = obj[i]->y_vel };
-                    simobject_collision(obj[i], &border, props);
+                    //^
+                    printf("object x,y velocity b4 collision = %f,%f\n", obj[i]->x_vel, obj[i]->y_vel);
+                    //^
+
+                    simobject_t border = { .mass = 10000, .x_vel = obj[i]->x_vel, .y_vel = obj[i]->y_vel };
+                    simobject_collision(obj[i], &border, collision_matrix[i][j], props);
+
+                    //^
+                    printf("object x,y velocity after collisio = %f,%f\n", obj[i]->x_vel, obj[i]->y_vel);
+                    //^
+
+                    last_collision_matrix[i][j] = num_ignore_frames;
+
                 }
 
                 // if it's an object collision
                 else
                 {
-                    simobject_collision(obj[i], obj[j], props);
+                    simobject_collision(obj[i], obj[j], collision_matrix[i][j], props);
+                    last_collision_matrix[i][j] = num_ignore_frames;
                 }
 
                 // don't re-calculate the collision

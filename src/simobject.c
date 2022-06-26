@@ -17,12 +17,21 @@
 
 /* ---------------------------------------------------------------------------------------- */
 
+typedef struct vector
+{
+    float x;
+    float y;
+} vector;
+
+/* ---------------------------------------------------------------------------------------- */
+
 static void simobject_update_acceleration(simobject_t *obj, fieldproperties_t props);
 static void simobject_update_velocity(simobject_t *obj, fieldproperties_t props);
 static void simobject_update_momentum(simobject_t *obj, fieldproperties_t props);
 static void simobject_update_position(simobject_t *obj, fieldproperties_t props);
 
 /* ---------------------------------------------------------------------------------------- */
+
 
 //* TODO: make these function arguments variadic, default values all == 0. Supplying all these for an object is goofy
 simobject_t * createObject
@@ -51,9 +60,9 @@ simobject_t * createObject
     obj->intr_x_acc = intr_x_acc;
     obj->intr_y_acc = intr_y_acc;
 
-    obj->color_r = rand() % 255;
-    obj->color_g = rand() % 255;
-    obj->color_b = rand() % 255;
+    obj->color_r = rand() % 150 + 50;
+    obj->color_g = rand() % 150 + 50;
+    obj->color_b = rand() % 150 + 50;
 
     return obj;
 
@@ -74,16 +83,37 @@ void simobject_update_state(simobject_t *obj, fieldproperties_t props)
 
 }
 
-void simobject_collision(simobject_t *obj1, simobject_t *obj2, fieldproperties_t props)
+// note: referenced from object 1's perspective
+void simobject_collision(simobject_t *obj1, simobject_t *obj2, uint8_t collision_type, fieldproperties_t props)
 {
 
     #if (SIMULATION_PERFECTLY_ELASTIC)
     {
-        obj1->x_vel += -obj1->x_vel*2.0f;
-        obj1->y_vel += -obj1->y_vel*2.0f;
 
-        obj2->x_vel += -obj2->x_vel*2.0f;
-        obj2->y_vel += -obj2->y_vel*2.0f;
+        // right/left collision
+        if (collision_type & 0x01 || collision_type & 0x02)
+        {
+            obj1->x_vel -= obj1->x_vel*2;
+            obj2->x_vel -= obj1->x_vel*2;
+
+            printf("right/left!!\n");
+
+            return;
+
+        }
+
+        // top/bottom collision
+        if (collision_type & 0x04 || collision_type & 0x08)
+        {
+            printf("top/bottom!\n");
+            obj1->y_vel -= obj1->y_vel*2;
+            obj2->y_vel -= obj2->y_vel*2;
+        }
+
+    }
+    #else
+    {
+
     }
     #endif
 
@@ -117,8 +147,8 @@ static void simobject_update_velocity(simobject_t *obj, fieldproperties_t props)
     #if (SIMULATION_CONSTANT_ACCELERATION)
     {
         // dv = int(adt) ... a == constant so... dv = at
-        obj->x_vel += props.xvel_constant + ((obj->x_acc * dt) + (obj->intr_x_acc * dt));
-        obj->y_vel += props.yvel_constant + ((obj->y_acc * dt) + (obj->intr_y_acc * dt));
+        obj->x_vel += props.xvel_constant + (obj->x_acc * dt) + (obj->intr_x_acc * dt);
+        obj->y_vel += props.yvel_constant + (obj->y_acc * dt) + (obj->intr_y_acc * dt);
     }
     #endif
 
@@ -134,11 +164,18 @@ static void simobject_update_momentum(simobject_t *obj, fieldproperties_t props)
 {
 
     float dt = props.timestep;
+    float px, py;
 
     #if (SIMULATION_CONSTANT_ACCELERATION)
     {
         // p = m||v||
+
+        //px = (obj->mass * obj->x_vel);
+        //py = (obj->mass * obj->y_vel);
+
         obj->momentum = obj->mass * sqrt( (obj->x_vel * obj->x_vel) + (obj->y_vel * obj->y_vel) );
+
+        
     }
     #endif
 
@@ -164,5 +201,3 @@ static void simobject_update_position(simobject_t *obj, fieldproperties_t props)
     if (obj->y_pos < -props.max_y_pos) obj->y_pos = -props.max_y_pos;
 
 }
-
-
