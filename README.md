@@ -1,2 +1,3 @@
 # sdl-physics-engine
-# writing this shit from the ground up yo
+
+writing this shit from the ground up yo
